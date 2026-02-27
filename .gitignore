@@ -18,8 +18,11 @@ wheels/
 ML/.venv/
 
 # ────── Data (heavy) ──────
-data/
-raw_data/
+data/*
+raw_data/*
+!raw_data/pdf_excel_data/
+raw_data/pdf_excel_data/*
+!raw_data/pdf_excel_data/soil_analysis_database.csv
 soil_analysis.db
 
 # ────── ML results & model artefacts ──────
@@ -68,6 +71,9 @@ heatmap_test.png
 es1c02479_si_001.pdf
 check_farms.py
 *.xlsx
+
+# ────── Exceptions: soil analysis data (for reproducibility) ──────
+!data/soil_analysis.xlsx
 
 # ────── OS / IDE ──────
 .DS_Store
