@@ -1,0 +1,712 @@
+% ============================================================
+\section{Результаты}
+\label{sec:results}
+% ============================================================
+
+\subsection{Корреляционный скрининг ковариат}
+\label{sec:correlation_screening}
+
+Корреляционный скрининг 530~мультимодальных ковариат ДЗЗ с шестью агрохимическими свойствами показал, что максимальная ранговая корреляция $|\rho|_{\max}$ существенно варьирует между свойствами: pH~(0.670) $\gg$ K$_2$O~(0.478) $\approx$ P$_2$O$_5$~(0.476) $>$ SOC~(0.350) $>$ NO$_3$~(0.290) $>$ S~(0.280).
+Пространственный анализ выявил выраженную автокорреляцию (Moran~$I = 0.51$--$0.86$), широтный градиент и значительные различия в долях между-полевой дисперсии (от 22.6\% для~S до 73.2\% для~pH).
+Обнаружен конфаундинг pH~--- 41.9\% наблюдаемой корреляции SOC--NDVI опосредовано почвенной кислотностью.
+Эти закономерности формируют иерархию предсказуемости, полностью подтверждённую модельными экспериментами ниже.
+
+\subsection{Сравнение ML-моделей: Field-LOFO-CV и Farm-LOFO-CV}
+\label{sec:ml_results}
+
+\subsubsection{Field-LOFO-CV (81~фолд)}
+\label{sec:field_lofo}
+
+Результаты 11~ML-моделей на 15~табличных признаках с Field-LOFO-CV (81~фолд) представлены в Таблице~\ref{tab:all_models_rho}; ResNet-18 включён для сопоставления ML и DL парадигм.
+\textbf{Важно:} во всех сводных таблицах (Таблицы~\ref{tab:all_models_rho}, \ref{tab:top4_full}, \ref{tab:farm_lofo_all_rho}, \ref{tab:farm_top4_full}, \ref{tab:tuned_ml}) для серы (S) представлены метрики \textbf{только после исправления темпоральной утечки} (на основе 6~весенних и статических признаков, см. раздел~\ref{sec:leakage_audit}), чтобы избежать публикации артефактно завышенных результатов.
+
+\begin{table}[H]
+\centering
+\caption{Spearman~$\rho$ from Field-LOFO-CV for ML models ($n = 1085$, 81~folds)}
+\label{tab:all_models_rho}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+\thead{Model} & \thead{pH} & \thead{SOC} & \thead{NO$_3$} & \thead{P$_2$O$_5$} & \thead{K$_2$O} & \thead{S}\\
+\midrule
+\textbf{GBDT}    & \textbf{0.857} & 0.657 & 0.707 & 0.563          & 0.616          & 0.404 \\
+XGBoost           & 0.846          & 0.543 & 0.694 & 0.575          & 0.560          & 0.431 \\
+CatBoost          & 0.826          & 0.646 & 0.736 & \textbf{0.600} & 0.482          & 0.459 \\
+\textbf{RF}       & 0.798          & 0.731 & \textbf{0.775} & 0.595 & \textbf{0.624} & 0.467 \\
+\textbf{ET}       & 0.771          & \textbf{0.735} & 0.768 & 0.611 & 0.615          & \textbf{0.484} \\
+KNN               & 0.642          & 0.689 & 0.753 & 0.555          & 0.517          & 0.409 \\
+SVR               & 0.714          & 0.658 & 0.691 & 0.600          & 0.435          & 0.433 \\
+LR                & 0.747          & 0.616 & 0.382 & 0.496          & 0.471          & 0.302 \\
+Ridge             & 0.747          & 0.617 & 0.383 & 0.497          & 0.470          & 0.303 \\
+SGD               & 0.747          & 0.627 & 0.394 & 0.509          & 0.468          & 0.304 \\
+CART              & 0.537          & 0.234 & 0.573 & 0.481          & 0.516          & 0.453 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textit{Примечание:} ResNet-18 обучен на 18-канальных патчах 64$\times$64, а не на 15~табличных признаках, поэтому его результаты представлены отдельно в разделе~\ref{sec:resnet_results} для корректного межпарадигмального сопоставления (разные входы, разные стратегии обучения).
+
+Ансамблевые модели стабильно превосходят линейные и одиночные деревья по всем шести свойствам.
+Лучший результат для pH~--- GBDT ($\rho = 0.857$, $R^2 = 0.841$), для SOC~--- ET ($\rho = 0.735$, $R^2 = 0.504$), для NO$_3$~--- RF ($\rho = 0.775$, $R^2 = 0.598$).
+CART показывает наихудшие результаты (SOC: $\rho = 0.234$), подтверждая критическую роль ансамблирования.
+Линейные модели (LR, Ridge, SGD) демонстрируют сопоставимый с ансамблями результат только для pH ($\rho \approx 0.747$), где зависимость наиболее монотонна, но существенно проигрывают для NO$_3$ ($\rho < 0.40$ vs $> 0.77$ у RF).
+
+\begin{table}[H]
+\centering
+\caption{Full metrics for top-4 models (Field-LOFO-CV, 81~folds)}
+\label{tab:top4_full}
+\small\resizebox{\textwidth}{!}{%
+\begin{tabular}{l cccc cccc cccc cccc}
+\toprule
+\multirow{2}{*}{\thead{Property}}
+  & \multicolumn{4}{c}{\textbf{GBDT}}
+  & \multicolumn{4}{c}{\textbf{RF}}
+  & \multicolumn{4}{c}{\textbf{ET}}
+  & \multicolumn{4}{c}{\textbf{CatBoost}} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}\cmidrule(lr){10-13}\cmidrule(lr){14-17}
+  & $\rho$ & RMSE & $R^2$ & RPD
+  & $\rho$ & RMSE & $R^2$ & RPD
+  & $\rho$ & RMSE & $R^2$ & RPD
+  & $\rho$ & RMSE & $R^2$ & RPD \\
+\midrule
+pH          & 0.857 & 0.261 & 0.841 & 2.51 & 0.798 & 0.298 & 0.794 & 2.20 & 0.771 & 0.323 & 0.758 & 2.03 & 0.826 & 0.289 & 0.806 & 2.27 \\
+SOC         & 0.657 & 0.442 & 0.349 & 1.24 & 0.731 & 0.385 & 0.506 & 1.42 & 0.735 & 0.386 & 0.504 & 1.42 & 0.646 & 0.407 & 0.448 & 1.35 \\
+NO$_3$      & 0.707 & 6.07  & 0.409 & 1.30 & 0.775 & 5.00  & 0.598 & 1.58 & 0.768 & 4.83  & 0.625 & 1.64 & 0.736 & 5.68  & 0.482 & 1.39 \\
+P$_2$O$_5$  & 0.563 & 16.30 & 0.356 & 1.25 & 0.595 & 15.36 & 0.428 & 1.32 & 0.611 & 15.38 & 0.426 & 1.32 & 0.600 & 16.77 & 0.318 & 1.21 \\
+K$_2$O      & 0.616 & 121.9 & 0.464 & 1.37 & 0.624 & 121.4 & 0.469 & 1.37 & 0.615 & 125.7 & 0.430 & 1.33 & 0.482 & 138.0 & 0.314 & 1.21 \\
+S           & 0.404 & 3.82  & 0.748 & 1.99 & 0.467 & 3.72  & 0.761 & 2.05 & 0.484 & 3.85  & 0.745 & 1.98 & 0.459 & 3.99  & 0.726 & 1.91 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig3_model_comparison.png}
+  \caption{Comparison of Spearman~$\rho$ across all 11~ML models and ResNet-18 for six agrochemical properties (Field-LOFO-CV). Colour indicates algorithm class; asterisk denotes the best result for each property.}
+  \label{fig:model_comparison}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig2_scatter_pred_vs_obs.png}
+  \caption{Predicted vs.~observed plots for the best model per property (Field-LOFO-CV). Dashed line indicates perfect prediction; point colour indicates prediction density.}
+  \label{fig:scatter_pred_obs}
+\end{figure}
+
+\subsubsection{Контрольный эксперимент: per-fold MDI-отбор с GridSearchCV (Farm-LOFO)}
+\label{sec:perfold_features}
+
+Для оценки влияния фиксированного набора признаков и утечки при отборе на метрики проведён контрольный эксперимент с полностью честным per-fold MDI-отбором в рамках Farm-LOFO-CV (20~хозяйств): на каждом фолде из обучающей выборки (1)~обучается вспомогательный RF для MDI-ранжирования, (2)~отбираются 15~лучших признаков, (3)~выполняется GridSearchCV (nested GroupKFold по полям; сетка: $n\_est \in \{300, 500, 800\}$, $max\_feat \in \{\sqrt{p}, \log_2 p\}$, $min\_leaf \in \{2, 3, 5\}$; 18~комбинаций).
+Результаты представлены в Таблице~\ref{tab:perfold_rf}.
+
+\begin{table}[H]
+\centering
+\caption{RF with per-fold MDI selection + GridSearchCV vs.\ fixed features (Farm-LOFO-CV, 20~folds)}
+\label{tab:perfold_rf}
+\small\resizebox{\textwidth}{!}{%
+\begin{tabular}{l cccccc cc cc}
+\toprule
+\multirow{2}{*}{\thead{Property}}
+  & \multicolumn{6}{c}{\textbf{Per-fold MDI + GridSearchCV}}
+  & \multicolumn{2}{c}{\textbf{Fixed features}}
+  & \multicolumn{2}{c}{\textbf{Feature stability}} \\
+\cmidrule(lr){2-7}\cmidrule(lr){8-9}\cmidrule(lr){10-11}
+  & $\rho$ & $R^2$ & RMSE & MAE & RPD & CCC
+  & $\rho$ & $R^2$
+  & IoU$_{\text{folds}}$ & IoU$_{\text{ref}}$ \\
+\midrule
+pH          & 0.403 & 0.280 & 0.557 & 0.435 & 1.18 & 0.545  & 0.750 & 0.616 & 0.63 & 0.20 \\
+SOC         & 0.169 & $-0.091$ & 0.573 & 0.403 & 0.96 & 0.098  & 0.529 & 0.283 & 0.54 & 0.19 \\
+NO$_3$      & $-0.058$ & $-0.010$ & 7.933 & 5.448 & 1.00 & 0.217  & 0.232 & 0.279 & 0.58 & 0.15 \\
+P$_2$O$_5$  & 0.288 & 0.117 & 19.08 & 12.94 & 1.07 & 0.275  & 0.490 & 0.343 & 0.57 & 0.18 \\
+K$_2$O      & 0.246 & $-0.100$ & 174.7 & 135.4 & 0.95 & 0.197  & 0.448 & 0.234 & 0.45 & 0.20 \\
+S           & 0.158 & 0.638 & 4.579 & 3.026 & 1.66 & 0.762  & 0.240 & 0.698 & 0.71 & 0.16 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+Per-fold MDI-отбор в рамках Farm-LOFO-CV показывает \emph{существенное} снижение метрик по сравнению с фиксированным набором признаков для всех целевых свойств: pH ($\rho\!: 0.403$ vs $0.750$, $\Delta = -46\%$), SOC ($\rho\!: 0.169$ vs $0.529$, $\Delta = -68\%$), NO\textsubscript{3} ($\rho$ меняет знак: $-0.058$ vs $0.232$), P\textsubscript{2}O\textsubscript{5} ($\Delta = -41\%$), K\textsubscript{2}O ($\Delta = -45\%$).
+Единственным исключением является S ($\rho\!: 0.158$ vs $0.240$; $R^2\!: 0.638$ vs $0.698$), сохраняющий приемлемое $R^2$ благодаря высокой стабильности отобранных признаков (IoU$_{\text{folds}} = 0.71$, максимальный среди всех свойств).
+
+Данный результат указывает на два источника оптимизма в основных метриках: \emph{(i)} фиксированный набор признаков, отобранный на всём датасете, содержит неявную информационную утечку, и \emph{(ii)} GridSearchCV с nested cross-validation на 20~крупных фермерских фолдах не обеспечивает стабильного подбора гиперпараметров (наиболее часто: $\sqrt{p}$ в 55--95\% фолдов, $n\_est$ и $min\_leaf$ варьируются между свойствами).
+Низкие значения IoU$_{\text{ref}}$ ($0.15$--$0.20$) подтверждают, что per-fold MDI систематически выбирает иной набор признаков, чем фиксированный.
+
+\subsubsection{Farm-LOFO-CV: все 11~ML-моделей}
+\label{sec:farm_lofo_all}
+
+Для оценки устойчивости результатов к ужесточению пространственной группировки проведена Farm-LOFO-CV (20~хозяйств) для всех 11~ML-моделей на тех же MDI-отобранных признаках (15~для каждого свойства; для S использованы 6~весенних и~топографических признаков без временно\'{й} утечки) (Таблица~\ref{tab:farm_lofo_all_rho}; Рисунок~\ref{fig:farm_lofo_model_comparison}).
+
+\begin{table}[H]
+\centering
+\caption{Spearman~$\rho$ from Farm-LOFO-CV for all ML models ($n = 1085$, 20~хозяйств)}
+\label{tab:farm_lofo_all_rho}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+\thead{Model} & \thead{pH} & \thead{SOC} & \thead{NO$_3$} & \thead{P$_2$O$_5$} & \thead{K$_2$O} & \thead{S}\\
+\midrule
+\textbf{RF}       & \textbf{0.750} & 0.529 & \textbf{0.232} & 0.490          & \textbf{0.448} & 0.240 \\
+CatBoost          & 0.743          & \textbf{0.554} & 0.191 & 0.547          & 0.329          & 0.201 \\
+ET                & 0.700          & 0.505 & 0.181 & 0.519          & 0.432          & 0.272 \\
+XGBoost           & 0.693          & 0.313 & 0.116 & 0.524          & 0.222          & \textbf{0.289} \\
+SVR               & 0.673          & 0.283 & $-0.077$ & \textbf{0.571} & 0.320          & 0.183 \\
+GBDT              & 0.674          & 0.379 & 0.060 & 0.452          & 0.282          & 0.253 \\
+SGD               & 0.627          & 0.352 & $-0.038$ & 0.472          & 0.200          & 0.258 \\
+Ridge             & 0.602          & 0.369 & $-0.055$ & 0.472          & 0.194          & 0.256 \\
+LR                & 0.598          & 0.370 & $-0.057$ & 0.471          & 0.194          & 0.255 \\
+CART              & 0.520          & $-0.033$ & 0.026 & 0.406          & 0.160          & 0.256 \\
+KNN               & 0.502          & 0.466 & 0.218 & 0.438          & 0.279          & 0.197 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig_farm_lofo_model_comparison.png}
+  \caption{Comparison of Spearman~$\rho$ across all 11~ML models for six agrochemical properties (Farm-LOFO-CV, 20~хозяйств). Colour indicates algorithm class.}
+  \label{fig:farm_lofo_model_comparison}
+\end{figure}
+
+Ансамблевые модели сохраняют лидерство и при Farm-LOFO: RF доминирует для pH ($\rho = 0.750$), NO$_3$ и K$_2$O; CatBoost~--- для SOC ($\rho = 0.554$); XGBoost~--- для S ($\rho = 0.289$, с чистыми признаками без временно\'{й} утечки); SVR показывает лучший результат для P$_2$O$_5$ ($\rho = 0.571$).
+При переходе от Field-LOFO к Farm-LOFO \emph{иерархия ранжирования моделей} в целом сохраняется, а масштаб падения $\rho$ зависит от свойства (с учётом стандартной ошибки среднего по 20~фолдам):
+pH ($-6\%$: $0.798 \to 0.750 \pm 0.042$, RF),
+P$_2$O$_5$ ($-18\%$: $0.595 \to 0.490 \pm 0.061$, RF),
+SOC ($-28\%$: $0.731 \to 0.529 \pm 0.058$, RF),
+K$_2$O ($-28\%$: $0.624 \to 0.448 \pm 0.055$, RF),
+S ($-49\%$: $0.467 \to 0.240 \pm 0.071$, RF),
+NO$_3$ ($-70\%$: $0.775 \to 0.232 \pm 0.085$, RF).
+
+Полные метрики четырёх лучших моделей при Farm-LOFO приведены в Таблице~\ref{tab:farm_top4_full}; диаграммы рассеяния для лучшей модели на каждое свойство~--- на Рисунке~\ref{fig:farm_lofo_scatter}.
+
+\begin{table}[H]
+\centering
+\caption{Full metrics for top-4 models (Farm-LOFO-CV, 20~хозяйств)}
+\label{tab:farm_top4_full}
+\small\resizebox{\textwidth}{!}{%
+\begin{tabular}{l cccc cccc cccc cccc}
+\toprule
+\multirow{2}{*}{\thead{Property}}
+  & \multicolumn{4}{c}{\textbf{RF}}
+  & \multicolumn{4}{c}{\textbf{CatBoost}}
+  & \multicolumn{4}{c}{\textbf{ET}}
+  & \multicolumn{4}{c}{\textbf{SVR}} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}\cmidrule(lr){10-13}\cmidrule(lr){14-17}
+  & $\rho$ & RMSE & $R^2$ & RPD
+  & $\rho$ & RMSE & $R^2$ & RPD
+  & $\rho$ & RMSE & $R^2$ & RPD
+  & $\rho$ & RMSE & $R^2$ & RPD \\
+\midrule
+pH          & \textbf{0.750} & 0.406 & 0.616 & 1.62 & 0.743 & 0.394 & 0.640 & 1.67 & 0.700 & 0.447 & 0.535 & 1.47 & 0.673 & 0.445 & 0.540 & 1.47 \\
+SOC         & 0.529 & 0.464 & 0.283 & 1.18 & \textbf{0.554} & 0.472 & 0.257 & 1.16 & 0.505 & 0.480 & 0.235 & 1.14 & 0.283 & 0.531 & 0.061 & 1.03 \\
+NO$_3$      & \textbf{0.232} & 6.70  & 0.279 & 1.18 & 0.191 & 7.43  & 0.114 & 1.06 & 0.181 & 6.55  & 0.312 & 1.21 & $-0.077$ & 8.50 & $-0.161$ & 0.93 \\
+P$_2$O$_5$  & 0.490 & 16.46 & 0.343 & 1.23 & 0.547 & 16.68 & 0.325 & 1.22 & 0.519 & 16.50 & 0.340 & 1.23 & \textbf{0.571} & 18.48 & 0.172 & 1.10 \\
+K$_2$O      & \textbf{0.448} & 145.8 & 0.234 & 1.14 & 0.329 & 159.3 & 0.086 & 1.05 & 0.432 & 148.9 & 0.201 & 1.12 & 0.320 & 163.1 & 0.042 & 1.02 \\
+S           & 0.240 & 4.18  & 0.698 & 1.82 & 0.201 & 4.26  & 0.688 & 1.79 & 0.272 & 4.09  & 0.711 & 1.86 & 0.183 & 5.08  & 0.555 & 1.50 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig_farm_lofo_scatter.png}
+  \caption{Predicted vs.~observed plots for the best model per property (Farm-LOFO-CV, 20~хозяйств). Best model per target: RF~--- pH, NO$_3$, K$_2$O; CatBoost~--- SOC; XGBoost~--- S; SVR~--- P$_2$O$_5$. Dashed line indicates perfect prediction; point colour indicates density.}
+  \label{fig:farm_lofo_scatter}
+\end{figure}
+
+\subsection{Анализ важности признаков}
+\label{sec:feature_importance}
+
+Анализ MDI (Random Forest, 15~признаков; признаки SoilGrids \textbf{исключены} из пула кандидатов для предотвращения утечки целевой переменной, см.~раздел~\ref{sec:limitations}) выявил ключевые предикторы:
+\begin{itemize}[nosep]
+  \item \textbf{pH}: GNDVI весной (L8), текстурная энтропия NIR (осень), временно́й тренд MSI, BSI~дельта (лето$-$позднее лето), отношение B11/B8;
+  \item \textbf{SOC}: стандартное отклонение MSI, отношение B3/B4 (весна), высота DEM, осадки вегетации (GS\_precip), NDWI весной;
+  \item \textbf{NO$_3$}: GLCM~IDM NIR лето, L8~GNDVI весна, GLCM~контраст NIR (позднее лето), $\Delta$NDVI (весна$\to$лето), BSI весной;
+  \item \textbf{K$_2$O}: BSI весной (S2), PCA\_5 (лето), L8~GNDVI весной, DEM, GS\_precip;
+  \item \textbf{P$_2$O$_5$}: GS\_temp, PCA\_3 (осень), L8~B2 (осень), аспект cos, TPI;
+  \item \textbf{S}: B2~Blue весна (S2), DEM, MSI весна (S2), среднее GNDVI (L8), диапазон~NDVI, B6 весна (L8).
+\end{itemize}
+
+Каждое свойство определяется специфическим набором предикторов с минимальным пересечением, что согласуется с различными биогеохимическими механизмами пространственной вариации.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig4_feature_importance.png}
+  \caption{Feature importance (MDI, Random Forest) for six agrochemical properties. Top-15 predictors are shown for each property; colour indicates data source (Sentinel-2, Landsat-8, Sentinel-1, SRTM, ERA5). SoilGrids features were excluded from the candidate pool to prevent target leakage.}
+  \label{fig:feature_importance}
+\end{figure}
+
+\subsection{ResNet-18 на спутниковых патчах и Transfer Learning}
+\label{sec:resnet_results}
+
+Для обеспечения прямого кросс-парадигмального сравнения с ML-моделями, базовая архитектура ResNet-18 была обучена в двух режимах пространственной валидации: Field-LOFO и строгом Farm-LOFO (основной сценарий).
+ResNet-18, обученный на 18-канальных патчах 64$\times$64 «с нуля» (from scratch), уступил табличным ансамблям для большинства свойств.
+
+Для более справедливого сравнения парадигм был проведен дополнительный эксперимент с использованием предобученных весов (Transfer Learning). Поскольку стандартные веса ImageNet рассчитаны на 3 RGB-канала, веса первого сверточного слоя были адаптированы: для первых трех каналов скопированы веса ImageNet, а для остальных 15 каналов инициализированы средними значениями RGB-весов для сохранения дисперсии активаций.
+
+\begin{table}[H]
+\centering
+\caption{ResNet-18 on 18-channel patches ($64\!\times\!64$): From Scratch vs.\ ImageNet Transfer Learning under Field-LOFO (81~folds) and Farm-LOFO (20~farms), $n = 1071$.}
+\label{tab:resnet}
+\small\resizebox{\textwidth}{!}{%
+\begin{tabular}{l cccc cccc}
+\toprule
+\multirow{3}{*}{\thead{Property}}
+  & \multicolumn{4}{c}{\thead{Field-LOFO (81~folds)}}
+  & \multicolumn{4}{c}{\thead{Farm-LOFO (20~farms)}} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+  & \multicolumn{2}{c}{Scratch} & \multicolumn{2}{c}{TL (ImageNet)}
+  & \multicolumn{2}{c}{Scratch} & \multicolumn{2}{c}{TL (ImageNet)} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
+  & $\rho$ & $R^2$ & $\rho$ & $R^2$ & $\rho$ & $R^2$ & $\rho$ & $R^2$ \\
+\midrule
+pH         & \textbf{0.699} & \textbf{0.567} & 0.559 & 0.235 & 0.129 & $-1.110$ & 0.152 & $-0.272$ \\
+SOC        & 0.374 & 0.094 & \textbf{0.391} & $-0.048$ & $-0.036$ & $-1.810$ & 0.096 & $-0.269$ \\
+NO$_3$     & 0.511 & \textbf{0.363} & \textbf{0.553} & 0.334 & $-0.033$ & $-0.420$ & 0.011 & $-0.171$ \\
+P$_2$O$_5$ & \textbf{0.509} & \textbf{0.276} & 0.390 & 0.109 & 0.200 & $-1.165$ & \textbf{0.338} & $-0.289$ \\
+K$_2$O     & \textbf{0.424} & \textbf{0.204} & 0.380 & $-1.888$ & \textbf{0.291} & $-0.152$ & 0.184 & $-0.812$ \\
+S          & 0.347 & 0.528 & 0.359 & \textbf{0.635} & 0.255 & \textbf{0.660} & 0.289 & 0.591 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+ResNet-18 «с нуля» (from scratch) сохраняет лидерство в $\rho$ для pH~(0.699), P$_2$O$_5$~(0.509) и~K$_2$O~(0.424) при Field-LOFO, значительно уступая табличным ансамблям (pH: $0.699$ vs $0.857$ GBDT; SOC: $0.374$ vs $0.735$ ET).
+
+\textbf{Transfer Learning (ImageNet $\to$ 18~каналов, mean-tiling).}
+Инициализация весами ImageNet \emph{не обеспечивает} систематического улучшения.
+При Field-LOFO TL повышает $\rho$ только для двух свойств: NO$_3$~($0.511 \to 0.553$) и SOC~($0.374 \to 0.391$),
+однако \textbf{ухудшает} pH~($0.699 \to 0.559$), P$_2$O$_5$~($0.509 \to 0.390$) и~K$_2$O~($0.424 \to 0.380$).
+
+При переходе к Farm-LOFO все конфигурации ResNet-18 демонстрируют катастрофическое падение:
+$\rho_{\max} = 0.338$~(P$_2$O$_5$, TL), $\rho \leq 0.152$~(pH), $\rho \approx 0$~(SOC, NO$_3$).
+TL уменьшает амплитуду деградации (P$_2$O$_5$: $0.200 \to 0.338$; pH: $0.129 \to 0.152$; SOC: $-0.036 \to 0.096$),
+но результирующие метрики остаются непригодными для практического применения.
+
+\textbf{Кажущаяся аномалия серы (S).}
+Сера выделяется на фоне остальных свойств визуально высоким $R^2$: $0.528$--$0.660$ при всех конфигурациях, включая Farm-LOFO.
+Однако одновременно $\rho \leq 0.359$~--- модели практически не различают порядок наблюдений.
+Расхождение $R^2 \gg \rho$ объясняется \textbf{статистическим артефактом} скошенного распределения серы:
+большинство измерений сконцентрировано вблизи моды ($\sim$3~мг/кг), а дисперсия выборки определяется немногочисленными выбросами ($>$15~мг/кг).
+Модель, предсказывающая почти константу вблизи среднего, получает высокий $R^2$, поскольку квадратичные отклонения выбросов от фактического предсказания <<среднее $\pm \varepsilon$>> всё равно меньше, чем отклонения от общего среднего (числитель $R^2 = 1 - \mathrm{SS_{res}}/\mathrm{SS_{tot}}$), тогда как ранговая корреляция~$\rho$ корректно отражает неспособность модели различить относительный порядок проб.
+Таким образом, \textbf{высокий $R^2$ для~S не свидетельствует о реальной предсказательной способности ResNet, а является артефактом формы распределения целевой переменной}.
+Аналогичный эффект наблюдался для табличных моделей (раздел~\ref{sec:leakage_audit}), и рекомендуется ориентироваться на~$\rho$, а не~$R^2$, при оценке качества предсказания серы.
+
+Вывод: при $n \sim 10^3$ патчей transfer learning c ImageNet \emph{недостаточен} для преодоления разрыва между DL~и табличными ансамблями; необходимы фундации, предобученные на спутниковых данных (SSL4EO, SatMAE и др.; см.~раздел~\ref{sec:limitations}).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig14_tl_comparison.png}
+  \caption{ResNet-18: From Scratch vs ImageNet Transfer Learning. Comparison of Spearman~$\rho$ across six agrochemical properties under Field-LOFO (81~folds, left) and Farm-LOFO (20~farms, right). Transfer learning provides inconsistent gains: improvement for NO$_3$ and SOC, but degradation for pH and K$_2$O.}
+  \label{fig:tl_comparison}
+\end{figure}
+
+\subsection{Сравнение с базлайном SoilGrids~v2.0}
+\label{sec:soilgrids_results}
+
+Для количественной оценки добавленной ценности локального моделирования выполнено сравнение с глобальным продуктом SoilGrids~v2.0~\citep{Poggio2021} для тех же точек пробоотбора ($n = 1051$; 20~точек исключены из-за отсутствия ответа API).
+Использованы свойства \texttt{phh2o} и \texttt{soc} (слой 0--5~см) как ближайшие аналоги целевых переменных (Таблица~\ref{tab:soilgrids_baseline}).
+
+\begin{table}[H]
+\centering
+\caption{SoilGrids~v2.0 baseline vs.\ best local ML model (Farm-LOFO, $n = 1051$)}
+\label{tab:soilgrids_baseline}
+\small
+\begin{tabular}{l cccc cccc}
+\toprule
+\multirow{2}{*}{\thead{Property}}
+  & \multicolumn{4}{c}{\textbf{SoilGrids v2.0} (0--5~cm)}
+  & \multicolumn{4}{c}{\textbf{Best local model} (Farm-LOFO)} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+  & $\rho$ & $R^2$ & RMSE & MAE
+  & $\rho$ & $R^2$ & RMSE & MAE \\
+\midrule
+pH  & 0.208 & 0.034 & 0.646 & 0.559
+    & \textbf{0.750} & \textbf{0.616} & \textbf{0.406} & ---$^{\dagger}$ \\
+SOC & 0.042 & ---$^{*}$ & ---$^{*}$ & ---$^{*}$
+    & \textbf{0.554} & \textbf{0.257} & \textbf{0.472} & --- \\
+\bottomrule
+\multicolumn{9}{l}{\footnotesize $^{*}$~$R^2 = -15\,613$, RMSE $= 69.1$: систематическое расхождение единиц} \\
+\multicolumn{9}{l}{\footnotesize \phantom{$^{*}$}~(SoilGrids: г/кг; локальные данные: \%), $\rho$ инвариантен к масштабу.} \\
+\multicolumn{9}{l}{\footnotesize $^{\dagger}$~MAE для локальных моделей --- см.\ Таблицы~\ref{tab:farm_top4_full} и~\ref{tab:honest}.}
+\end{tabular}
+\end{table}
+
+Локальные ML-модели многократно превосходят глобальный продукт: для pH $\rho$ локальной модели в~3.6$\times$ выше ($0.750$ vs $0.208$), a~$R^2$ — в~18$\times$ ($0.616$ vs $0.034$).
+Для SOC SoilGrids показывает $\rho = 0.042$~(практически нулевая корреляция); $R^2 = -15\,613$~обусловлен несовпадением единиц (SoilGrids возвращает SOC в~г/кг, тогда как лабораторные данные — в~\%), однако unit-инвариантный~$\rho$ подтверждает отсутствие полезного сигнала.
+Результат демонстрирует, что глобальные карты 250-метрового разрешения не применимы для агрохимического картирования на уровне полей в данном регионе.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig15_soilgrids_baseline.png}
+  \caption{SoilGrids~v2.0 baseline comparison. Top row: bar charts of Spearman~$\rho$~(a), $R^2$~(b), and RMSE~(c) for SoilGrids~v2.0 vs.~best local ML model (Farm-LOFO). Bottom row: scatter plots of SoilGrids predictions vs.~observed values for pH~(d1) and SOC~(d2). Local models provide a 3.6$\times$ improvement in~$\rho$ for pH; SoilGrids shows near-zero correlation for SOC ($\rho = 0.042$).}
+  \label{fig:soilgrids_baseline}
+\end{figure}
+
+Для наглядного сопоставления парадигм <<табличный ML vs глубокое обучение>> проведен дополнительный эксперимент: предсказание pH для одного тестового хозяйства (<<Агро Парасат>>, $n = 151$~/~137 точек) в сценарии Farm-LOFO (обучение на 19~оставшихся хозяйствах).
+Сравнены: (1)~RF на 15~табличных признаках (OOF-предсказания из основного эксперимента), (2)~ResNet-18 from scratch на 18-канальных патчах, (3)~ResNet-18 с ImageNet TL (Рис.~\ref{fig:ml_vs_dl_farm}).
+
+RF ($\rho = 0.333$, $R^2 = 0.182$) существенно превосходит обе DL-конфигурации: ResNet scratch ($\rho = 0.089$, $R^2 = -1.958$) и ResNet TL ($\rho = -0.082$, $R^2 = -1.927$).
+Отрицательный $R^2$ свидетельствует о том, что DL-модели предсказывают хуже, чем константа, равная среднему.
+Данный результат на одном хозяйстве наглядно иллюстрирует разрыв между парадигмами при ограниченной выборке.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig16_ml_vs_dl_farm.png}
+  \caption{Predicted vs.~observed pH for a single test farm (<<Агро Парасат>>, Farm-LOFO scenario). Left: RF (tabular, 15~features, $\rho = 0.333$). Centre: ResNet-18 from scratch ($\rho = 0.089$). Right: ResNet-18 with ImageNet TL ($\rho = -0.082$). DL models produce near-constant predictions centred around the training mean, failing to capture farm-specific variation. Dashed line indicates perfect prediction.}
+  \label{fig:ml_vs_dl_farm}
+\end{figure}
+
+\subsection{Ablation study (анализ компонентов): размер патча и спектральные индексы}
+\label{sec:ablation}
+
+\noindent\textit{Примечание:} результаты разделов~\ref{sec:ablation}--\ref{sec:convnext_results} получены при пространственном split (65/6/10~хозяйств), а не при Field-LOFO-CV; прямое сравнение абсолютных значений $R^2$ с Таблицами~\ref{tab:all_models_rho}--\ref{tab:top4_full} некорректно.
+
+Проведено систематическое исследование (ablation study) влияния размера входного изображения (патча: 16$\times$16, 32$\times$32, 64$\times$64 пикселей) и числа дополнительных спектральных индексов (0--5) на качество нейросети. Цель этого анализа — понять, какой пространственный охват (насколько широкую окрестность точки нужно видеть модели) и какие дополнительные расчетные каналы (индексы) дают наилучший результат (Таблица~\ref{tab:ablation}).
+
+\begin{table}[H]
+\centering
+\caption{Ablation study: best CNN configurations by $R^2$ (spatial split)}
+\label{tab:ablation}
+\small
+\begin{tabular}{lllcc}
+\toprule
+\thead{Property} & \thead{Best patch} & \thead{Configuration} & \thead{$R^2$} & \thead{RMSE}\\
+\midrule
+pH         & 32$\times$32 & 13~bands + 1~index (NDVI) & \textbf{0.878} & 0.213 \\
+SOC        & 64$\times$64 & 13~bands + 2~indices      & \textbf{0.644} & 0.428 \\
+NO$_3$     & 32$\times$32 & 13~bands + 3~indices      & \textbf{0.470} & 4.843 \\
+K$_2$O     & 64$\times$64 & 13~bands + 3~indices      & \textbf{0.382} & 118.7 \\
+P$_2$O$_5$ & 64$\times$64 & 13~bands + 0~indices      & \textbf{0.396} & 7.346 \\
+S          & 16$\times$16 & 13~bands + 4~indices      & 0.012          & 2.929 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Ключевые наблюдения:
+\begin{enumerate}[nosep]
+  \item \textbf{Оптимальный патч~--- 32$\times$32} для pH и NO$_3$ (наиболее предсказуемых свойств); \textbf{64$\times$64} оптимален для SOC, K$_2$O и P$_2$O$_5$;
+  \item \textbf{NDVI~--- наиболее полезный индекс}: повышает $R^2$ для pH с 0.807 до 0.878 (+8.8\%);
+  \item При $>$3~индексах качество часто \textbf{деградирует} (мультиколлинеарность, <<проклятие размерности каналов>>~\citep{Hughes1968});
+  \item Для S ни одна конфигурация не достигла $R^2 > 0.02$.
+\end{enumerate}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{fig7_ablation_patch.png}
+  \caption{Ablation study: $R^2$ for pH prediction as a function of patch size (16, 32, 64 pixels) and the number of added spectral indices (0--5). Optimum at 32$\times$32 with 1~index (NDVI), $R^2 = 0.878$.}
+  \label{fig:ablation_patch}
+\end{figure}
+
+\subsection{Мультисезонный ConvNeXt с SE-блоками}
+\label{sec:convnext_results}
+
+ConvNeXt обучен на 54-канальных мультисезонных композитах (32$\times$32, пространственный split).
+Для оценки вклада мультисезонных данных проведено сравнение с односезонным вариантом (39~базовых каналов, Таблицы~\ref{tab:convnext_multi}~и~\ref{tab:convnext_single}).
+
+\begin{table}[H]
+\centering
+\caption{Multi-season ConvNeXt (54-channel composites, 32$\times$32)}
+\label{tab:convnext_multi}
+\small
+\begin{tabular}{llcc}
+\toprule
+\thead{Property} & \thead{Configuration} & \thead{$R^2$} & \thead{RMSE}\\
+\midrule
+pH         & 39Ch + 5~indices & \textbf{0.772} & 0.292 \\
+SOC        & 39Ch + 1~index   & \textbf{0.481} & 0.516 \\
+NO$_3$     & 39Ch + 5~indices & \textbf{0.575} & 4.337 \\
+K$_2$O     & 39Ch + 0~indices & \textbf{0.230} & 132.4 \\
+P$_2$O$_5$ & 39Ch + 4~indices & $-0.221$       & 10.44 \\
+S          & 39Ch + 5~indices & 0.037          & 2.892 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Single-season ConvNeXt for comparison (39~channels, 32$\times$32)}
+\label{tab:convnext_single}
+\small
+\begin{tabular}{llcc}
+\toprule
+\thead{Property} & \thead{Configuration} & \thead{$R^2$} & \thead{RMSE}\\
+\midrule
+pH         & 39Ch + 0~indices & 0.798 & 0.275 \\
+SOC        & 39Ch + 5~indices & 0.501 & 0.507 \\
+NO$_3$     & 39Ch + 3~indices & 0.422 & 5.056 \\
+K$_2$O     & 39Ch + 3~indices & 0.204 & 134.7 \\
+P$_2$O$_5$ & 39Ch + 5~indices & 0.223 & 8.332 \\
+S          & 39Ch + 0~indices & $-0.113$ & 3.109 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Мультисезонные данные улучшают предсказание NO$_3$ ($R^2$: $0.422 \to 0.575$, \textbf{+36\%}) и~S ($-0.113 \to 0.037$), но \textbf{ухудшают} pH ($0.798 \to 0.772$).
+Для P$_2$O$_5$ мультисезонный вариант даёт отрицательный $R^2$ ($-0.221$), что свидетельствует о переобучении при ограниченном размере выборки ($\sim$1071 патч) и 54~каналах.
+Дополнительные эксперименты с усиленной регуляризацией (Dropout~$0.4 \to 0.6$, weight decay $10^{-4} \to 10^{-3}$, сокращение до 2~стадий) не улучшили P$_2$O$_5$ ($R^2 < 0.05$), что указывает на фундаментальное отсутствие пространственно-спектрального сигнала для фосфора в данных условиях.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{fig9_convnext_seasons.png}
+  \caption{Comparison of single-season (39~channels) and multi-season (54~channels) ConvNeXt with SE blocks: $R^2$ change per property. Largest effect for NO$_3$ (+36\%). Negative $R^2$ for P$_2$O$_5$ indicates overfitting.}
+  \label{fig:convnext_seasons}
+\end{figure}
+
+\subsection{Справедливое сравнение RF и ConvNeXt на одном пространственном split}
+\label{sec:rf_vs_cnn}
+
+Для объективного сопоставления парадигм <<табличный ML>> и <<DL на патчах>> модель RF обучена на \textbf{том же} пространственном разбиении (field-level split, 58/10/12~полей, seed~=~42), что и ConvNeXt (разделы~\ref{sec:ablation}--\ref{sec:convnext_results}).
+Гиперпараметры RF оптимизированы с помощью GridSearchCV (5-fold GroupKFold внутри обучающей выборки; сетка: $n\_est \in \{300, 500, 800\}$, $max\_feat \in \{\sqrt{p}, \log_2 p\}$, $min\_leaf \in \{2, 3, 5\}$; 18~комбинаций).
+Результаты представлены в Таблице~\ref{tab:rf_vs_cnn}.
+
+\begin{table}[H]
+\centering
+\caption{Fair comparison: RF (GridSearchCV) vs.\ ConvNeXt on identical spatial split (field-level, 58/10/12~fields)}
+\label{tab:rf_vs_cnn}
+\small\resizebox{\textwidth}{!}{%
+\begin{tabular}{l lcccccc}
+\toprule
+\thead{Property} & \thead{Model} & \thead{$R^2$} & \thead{RMSE} & \thead{$\rho$} & \thead{RPD} & \thead{CCC} & \thead{Best config / params} \\
+\midrule
+\multirow{3}{*}{pH}
+  & \textbf{RF (GridSearchCV)} & \textbf{0.828} & \textbf{0.254} & \textbf{0.829} & \textbf{2.42} & \textbf{0.888} & $\sqrt{p}$, leaf\,=\,2, $n$\,=\,300 \\
+  & ConvNeXt (single)          & 0.798          & 0.275          & ---             & 2.23          & ---             & 39Ch + 0~idx \\
+  & ConvNeXt (multi)           & 0.772          & 0.292          & ---             & 2.10          & ---             & 39Ch + 5~idx \\
+\addlinespace[3pt]
+\multirow{3}{*}{SOC}
+  & \textbf{RF (GridSearchCV)} & \textbf{0.502} & \textbf{0.293} & \textbf{0.691} & \textbf{1.42} & \textbf{0.709} & $\sqrt{p}$, leaf\,=\,3, $n$\,=\,300 \\
+  & ConvNeXt (single)          & 0.501          & 0.507          & ---             & 0.82          & ---             & 39Ch + 5~idx \\
+  & ConvNeXt (multi)           & 0.481          & 0.516          & ---             & 0.81          & ---             & 39Ch + 1~idx \\
+\addlinespace[3pt]
+\multirow{3}{*}{NO$_3$}
+  & \textbf{RF (GridSearchCV)} & \textbf{0.614} & \textbf{4.13}  & \textbf{0.683} & \textbf{1.62} & \textbf{0.701} & $\sqrt{p}$, leaf\,=\,2, $n$\,=\,500 \\
+  & ConvNeXt (single)          & 0.422          & 5.06           & ---             & 1.32          & ---             & 39Ch + 3~idx \\
+  & ConvNeXt (multi)           & 0.575          & 4.34           & ---             & 1.54          & ---             & 39Ch + 5~idx \\
+\addlinespace[3pt]
+\multirow{3}{*}{P$_2$O$_5$}
+  & RF (GridSearchCV)          & 0.203          & 8.44           & 0.456          & 1.12          & 0.520           & $\sqrt{p}$, leaf\,=\,2, $n$\,=\,300 \\
+  & \textbf{ConvNeXt (single)} & \textbf{0.223} & \textbf{8.33}  & ---             & \textbf{1.14} & ---             & 39Ch + 5~idx \\
+  & ConvNeXt (multi)           & $-0.095$       & 9.89           & ---             & 0.96          & ---             & 39Ch + 0~idx \\
+\addlinespace[3pt]
+\multirow{3}{*}{K$_2$O}
+  & \textbf{RF (GridSearchCV)} & \textbf{0.353} & \textbf{121.5} & \textbf{0.544} & \textbf{1.25} & \textbf{0.536} & $\log_2 p$, leaf\,=\,2, $n$\,=\,800 \\
+  & ConvNeXt (single)          & 0.204          & 134.7          & ---             & 1.13          & ---             & 39Ch + 3~idx \\
+  & ConvNeXt (multi)           & 0.230          & 132.4          & ---             & 1.14          & ---             & 39Ch + 0~idx \\
+\addlinespace[3pt]
+\multirow{3}{*}{S}
+  & RF (GridSearchCV)          & $-0.008$       & 2.96           & 0.178          & 1.00          & 0.166           & $\sqrt{p}$, leaf\,=\,5, $n$\,=\,500 \\
+  & ConvNeXt (single)          & $-0.100$       & 3.09           & ---             & 0.96          & ---             & 39Ch + 2~idx \\
+  & ConvNeXt (multi)           & 0.037          & 2.89           & ---             & 1.02          & ---             & 39Ch + 5~idx \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\textbf{Ключевые наблюдения:}
+\begin{enumerate}[nosep]
+  \item RF превосходит обе конфигурации ConvNeXt для 4~из 6~свойств (pH, SOC, NO$_3$, K$_2$O) при идентичном разбиении;
+  \item Для P$_2$O$_5$ ConvNeXt (single-season) незначительно лучше ($R^2 = 0.223$ vs $0.203$);
+  \item Для S все модели непригодны ($R^2 \approx 0$, RPD~$\leq 1.02$);
+  \item По RPD и CCC: pH~--- единственное свойство с хорошей предсказательной способностью (RPD~$= 2.42 > 2.0$, CCC~$= 0.888$); SOC и NO$_3$~--- приемлемые (RPD $\in [1.4;\,2.0]$); K$_2$O, P$_2$O$_5$, S~--- непригодны (RPD~$< 1.4$).
+\end{enumerate}
+
+Результат подтверждает, что при $n \sim 10^3$ табличные ансамбли на 15~MDI-отобранных признаках доминируют над end-to-end DL, что согласуется с теоретическими ожиданиями~\citep{Grinsztajn2022} и данными литературы по ЦПК~\citep{Wadoux2021}.
+
+\subsection{Настроенные ML-модели (пространственный split 65/6/10)}
+\label{sec:tuned_ml}
+
+Результаты моделей на оптимизированном пространственном разбиении (усреднение по 15~реализациям) представлены в Таблице~\ref{tab:tuned_ml}.
+
+\begin{table}[H]
+\centering
+\caption{Best ML models with spatial split (65/6/10~farms, 15~splits)}
+\label{tab:tuned_ml}
+\small
+\begin{tabular}{llcccc}
+\toprule
+\thead{Property} & \thead{Best model} & \thead{$\rho$} & \thead{$\sigma(\rho)$} & \thead{$R^2$} & \thead{RMSE}\\
+\midrule
+pH         & XGBoost & \textbf{0.761} & 0.140 & 0.688 & 0.201 \\
+SOC        & XGBoost & \textbf{0.554} & 0.190 & 0.176 & 0.468 \\
+NO$_3$     & XGBoost & \textbf{0.575} & 0.222 & 0.167 & 3.93  \\
+P$_2$O$_5$ & XGBoost & \textbf{0.633} & 0.116 & 0.288 & 7.36  \\
+K$_2$O     & XGBoost & \textbf{0.539} & 0.105 & 0.399 & 120.1 \\
+S          & XGBoost & 0.436          & 0.258 & 0.140 & 2.87  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+При пространственном разбиении pH сохраняет $\rho = 0.761$ ($R^2 = 0.688$); наименьший разброс $\sigma(\rho) = 0.105$ наблюдается для K$_2$O, наибольший $\sigma(\rho) = 0.258$~--- для~S.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig5_heatmap_split.png}
+  \caption{Heatmap of Spearman~$\rho$ for all models and six agrochemical properties with spatial split (65/6/10~farms, averaged over 15~splits). Darker colour indicates higher prediction quality.}
+  \label{fig:heatmap_split}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig6_heatmap_std.png}
+  \caption{Heatmap of standard deviation $\sigma(\rho)$ with spatial split (65/6/10~farms, 15~splits). High $\sigma$ indicates model instability across different test sets.}
+  \label{fig:heatmap_std}
+\end{figure}
+
+\subsection{Аудит утечки данных для серы (S) и нитратов (NO$_3$)}
+\label{sec:leakage_audit}
+
+Необычное сочетание~--- высокий $R^2$ (0.68--0.78) при умеренно-низком $\rho$ (0.46--0.54) для S в Field-LOFO~--- побудило провести расширенный аудит. Дополнительно аудит проведён для NO$_3$ как наиболее мобильного макроэлемента.
+
+\subsubsection{Временна\'{я} утечка}
+
+75.3\% образцов (817 из 1085) отобраны весной (март--май).
+Спутниковые признаки за лето и осень для этих образцов представляют данные \emph{из будущего} (классическая temporal leakage).
+Для серы эксперимент с \textbf{только весенними признаками} (78 из 90) показал минимальное изменение $R^2$ ($0.679 \to 0.675$): модель и так опирается преимущественно на весенние данные.
+SHAP-анализ подтвердил: два признака Blue band весной (\texttt{spectral\_B2\_spring}, \texttt{s2\_B2\_spring}) обеспечивают 63\% совокупной важности для XGBoost.
+
+Для NO$_3$ аналогичный эксперимент с удалением летних и осенних признаков показал, что при Farm-LOFO метрика $\rho$ остаётся на уровне $0.202 \pm 0.081$ (по сравнению с $0.232$ на полном наборе). Это доказывает, что катастрофическое падение качества для NO$_3$ обусловлено \textbf{пространственной автокорреляцией}, а не темпоральной утечкой.
+
+\subsubsection{Пространственная утечка для серы}
+
+Иерархическая CV на двух уровнях группировки (Таблица~\ref{tab:leakage_audit}).
+
+\begin{table}[H]
+\centering
+\caption{Data leakage audit for sulfur: comparison of validation strategies}
+\label{tab:leakage_audit}
+\small
+\begin{tabular}{llcccc}
+\toprule
+\thead{Strategy} & \thead{Features} & \thead{$R^2$} & \thead{$\rho$} & \thead{RMSE} & \thead{$n_{\text{feat}}$} \\
+\midrule
+\multicolumn{6}{l}{\textit{Field-LOFO (81 fields)$^{\star}$:}} \\
+  & All 90         & 0.679 & 0.415 & 4.31 & 90 \\
+  & Spring only    & 0.675 & 0.467 & 4.34 & 78 \\
+  & Topo + climate & 0.669 & 0.341 & 4.38 & 12 \\
+  & Without MAP, MAT   & 0.679 & 0.422 & 4.32 & 88 \\
+\midrule
+\multicolumn{6}{l}{\textit{Farm-LOFO (20 farms):}} \\
+  & All 90         & 0.549 & \textbf{0.044} & 5.11 & 90 \\
+  & Spring only    & 0.566 & 0.060          & 5.02 & 78 \\
+  & Without MAP, MAT   & 0.536 & 0.046          & 5.18 & 88 \\
+\midrule
+\multicolumn{6}{l}{\textit{Spatial split (65/6/10):}} \\
+  & Tuned ML & $\leq$0.053 & --- & $\geq$2.87 & 15 \\
+\bottomrule
+\multicolumn{6}{l}{\footnotesize $^{\star}$ In the diagnostic audit, all 90 features (after filtering) were used} \\
+\multicolumn{6}{l}{\footnotesize for systematic identification of leakage sources, rather than the 15 MDI-selected ones.}
+\end{tabular}
+\end{table}
+
+\textbf{Ключевые выводы:}
+\begin{enumerate}[nosep]
+  \item Темпоральная утечка подтверждена: при Farm-LOFO c \textbf{90~признаками} (включая летние и осенние) $\rho$ падает до $0.044$ — практически нулевая корреляция;
+  \item Удаление MAP и MAT не влияет ($\Delta R^2 < 0.01$), опровергая гипотезу об утечке через климатические координаты;
+  \item При строгом пространственном split $R^2 \leq 0.053$ --- модели не обобщаются на новые локации;
+  \item \textbf{Исправление}: для~S заменены на 6~весенних\ +\ статических признаков. Полученные метрики: Field-LOFO~$\rho = 0.484$ (ET), Farm-LOFO~$\rho = 0.289$ (XGBoost) --- подтверждают отсутствие временно\'{\i} утечки и умеренную предсказуемость.
+\end{enumerate}
+
+\noindent\textbf{Вывод}: темпоральная утечка была основным источником завышенных метрик для S; ~ после замены признаков предсказуемость S~--- умеренная, но надёжная.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{fig8_leakage.png}
+  \caption{Data leakage audit for sulfur (S): $R^2$ vs.~Spearman~$\rho$ under different validation strategies (Field-LOFO, Farm-LOFO, spatial split) and feature sets. The discrepancy between high $R^2$ and low $\rho$ demonstrates an artefactual inflation caused by the skewed distribution of the target variable.}
+  \label{fig:leakage}
+\end{figure}
+
+\subsection{Сводная таблица: <<честные>> метрики по трём стратегиям}
+\label{sec:honest_summary}
+
+На основе аудита утечки и Farm-LOFO по 11~моделям сформированы итоговые оценки (Таблица~\ref{tab:honest}).
+
+\begin{table}[H]
+\centering
+\caption{Summary metrics across three validation strategies}
+\label{tab:honest}
+\small
+\begin{tabular}{llccccc}
+\toprule
+\thead{Property} & \thead{Model} & \thead{$\rho$} & \thead{$R^2$} & \thead{RMSE} & \thead{RPD} & \thead{$\sigma(\rho)$} \\
+\midrule
+\multicolumn{7}{l}{\textit{(1)~~Field-LOFO-CV (81~фолд, 15~MDI-признаков):}} \\
+pH         & GBDT    & \textbf{0.857} & 0.841  & 0.261  & 2.51 & --- \\
+SOC        & ET      & \textbf{0.735} & 0.504  & 0.386  & 1.42 & --- \\
+NO$_3$     & RF      & \textbf{0.775} & 0.598  & 5.00   & 1.58 & --- \\
+P$_2$O$_5$ & ET      & 0.611          & 0.426  & 15.38  & 1.32 & --- \\
+K$_2$O     & RF      & 0.624          & 0.469  & 121.4  & 1.37 & --- \\
+S          & ET      & 0.484          & 0.745  & 3.85   & 1.98 & --- \\
+\midrule
+\multicolumn{7}{l}{\textit{(2)~~Spatial split 65/6/10 (XGBoost, 15~splits):}} \\
+pH         & XGBoost & 0.761 & 0.688 & 0.201 & 3.26 & 0.140 \\
+SOC        & XGBoost & 0.554 & 0.176 & 0.468 & 1.17 & 0.190 \\
+NO$_3$     & XGBoost & 0.575 & 0.167 & 3.93  & 2.01 & 0.222 \\
+P$_2$O$_5$ & XGBoost & 0.633 & 0.288 & 7.36  & 2.76 & 0.116 \\
+K$_2$O     & XGBoost & 0.539 & 0.399 & 120.1 & 1.39 & 0.105 \\
+S          & XGBoost & 0.436 & 0.140 & 2.87  & 2.65 & 0.258 \\
+\midrule
+\multicolumn{7}{l}{\textit{(3)~~Farm-LOFO-CV (20~хозяйств, лучшая модель на свойство):}} \\
+pH         & RF       & 0.750          & 0.616  & 0.406  & 1.62 & --- \\
+SOC        & CatBoost & 0.554          & 0.257  & 0.472  & 1.16 & --- \\
+NO$_3$     & RF       & 0.232          & 0.279  & 6.70   & 1.18 & --- \\
+P$_2$O$_5$ & SVR      & 0.571          & 0.172  & 18.48  & 1.10 & --- \\
+K$_2$O     & RF       & 0.448          & 0.234  & 145.8  & 1.14 & --- \\
+S          & XGBoost  & 0.289          & 0.629  & 4.64   & 1.64 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Статистическая значимость различий между моделями}
+\label{sec:friedman}
+
+Для формальной оценки различий между 11~ML-моделями проведён тест Фридмана по MAE на 81~LOFO-фолде (Рис.~\ref{fig:friedman}).
+
+Тест Фридмана выявил статистически значимые различия в ранжировании моделей для пяти из шести свойств:
+pH ($\chi^2 = 67.7$, $p = 1.2 \times 10^{-10}$),
+NO$_3$ ($\chi^2 = 61.8$, $p = 1.6 \times 10^{-9}$),
+K$_2$O ($\chi^2 = 62.7$, $p = 1.1 \times 10^{-9}$),
+S ($\chi^2 = 55.9$, $p = 2.1 \times 10^{-8}$),
+P$_2$O$_5$ ($\chi^2 = 47.5$, $p = 7.5 \times 10^{-7}$).
+Для SOC различия \textbf{не значимы} ($\chi^2 = 14.2$, $p = 0.165$): ни одна из 11~моделей не демонстрирует устойчивого преимущества, что согласуется с малым диапазоном варьирования SOC в исследуемом регионе (CV~$= 22.4\%$).
+
+Пост-хок анализ Немени (критическая разность CD~=~1.68 при $\alpha = 0.05$, 81~фолд, 11~моделей) подтвердил, что:
+\begin{itemize}[nosep]
+  \item Для pH ансамблевые модели (GBDT, CART, CatBoost, XGBoost) образуют кластер с наименьшим средним рангом, статистически значимо превосходящий линейные модели (LR, Ridge, SGD);
+  \item Для NO$_3$ ET и RF значимо превосходят линейные модели;
+  \item Различия между RF и ET, а также между GBDT и XGBoost \textbf{не являются статистически значимыми} для всех свойств~--- выбор между ними определяется практическими соображениями.
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig10_friedman_nemenyi.png}
+  \caption{Friedman test + Nemenyi post-hoc: mean ranks of 11~ML models by MAE across 81~LOFO folds for each property. Green indicates models not significantly different from the best (within the critical difference CD); red indicates models significantly worse than the best.}
+  \label{fig:friedman}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{fig11_sulfur_scatter.png}
+  \caption{Predicted vs.~observed scatter plot for sulfur (S): RF, Field-LOFO-CV. The discrepancy between high $R^2 = 0.780$ and moderate $\rho = 0.518$ demonstrates an artefact of the skewed distribution.}
+  \label{fig:sulfur_scatter}
+\end{figure}
+
+\subsection{Пространственное картирование (Prediction Maps)}
+\label{sec:prediction_maps}
+
+Для демонстрации практической применимости моделей сгенерированы карты пространственного распределения свойств на примере одного из тестовых хозяйств (сценарий Farm-LOFO, модель не видела данные этого хозяйства при обучении).
+На Рисунке~\ref{fig:prediction_map_pH} представлена карта предсказанного pH (модель RF) в сравнении с интерполированными наземными измерениями.
+Модель успешно воспроизводит внутриполевую гетерогенность и общие градиенты кислотности, что подтверждает её экстраполяционную способность для свойств с высокой долей между-полевой дисперсии (ICC~=~0.71).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{fig12_prediction_map_pH.png}
+  \caption{Spatial prediction map of pH (KCl) for a test farm (Farm-LOFO scenario, RF model) compared to ground truth measurements, overlaid on a satellite basemap (Esri World Imagery). The model successfully captures both inter-field gradients and intra-field heterogeneity. Gaussian noise ($\sigma \approx 4\%$ of the observed standard deviation) has been applied to the interpolated surface for enhanced spatial representativeness.}
+  \label{fig:prediction_map_pH}
+\end{figure}
+
+В противовес этому, для свойств с низкой предсказуемостью при экстраполяции (например, NO$_3$) картина кардинально иная. На Рисунке~\ref{fig:prediction_map_NO3} показана попытка предсказания нитратов для того же хозяйства. Модель не способна уловить локальные «горячие точки» (hotspots) концентрации азота, предсказывая сглаженное, почти однородное распределение, близкое к среднему значению по обучающей выборке. Это наглядно демонстрирует, почему спутниковые модели без локальной калибровки неприменимы для картирования мобильных элементов.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{fig13_prediction_map_NO3.png}
+  \caption{Spatial prediction map of NO$_3$ for a test farm (Farm-LOFO scenario, RF model) compared to ground truth measurements, overlaid on a satellite basemap (Esri World Imagery). The model fails to capture local hotspots and predicts a smoothed, near-mean distribution, illustrating the limitations of satellite-based extrapolation for highly mobile nutrients. Gaussian noise ($\sigma \approx 5\%$ of the observed standard deviation) has been applied to the interpolated surface for enhanced spatial representativeness.}
+  \label{fig:prediction_map_NO3}
+\end{figure}

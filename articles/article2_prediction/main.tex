@@ -1,0 +1,115 @@
+% ============================================================
+%  Статья 2 (Q1–Q2)
+%  ПРЕДСКАЗАНИЕ АГРОХИМИЧЕСКИХ СВОЙСТВ ПОЧВ С ИСПОЛЬЗОВАНИЕМ
+%  МУЛЬТИМОДАЛЬНЫХ СПУТНИКОВЫХ ДАННЫХ И МЕТОДОВ ML/DL
+% ============================================================
+\documentclass[a4paper,11pt]{article}
+
+% ============ ENCODING & FONTS ============
+\usepackage{fontspec}
+\setmainfont{DejaVu Serif}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}
+
+% ============ LANGUAGE ============
+\usepackage{polyglossia}
+\setdefaultlanguage{russian}
+\setotherlanguage{english}
+
+% ============ PAGE LAYOUT ============
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% ============ GRAPHICS ============
+\usepackage{graphicx}
+\graphicspath{{./figures/}{../../figures/}{../../math_statistics/output/}}
+\usepackage{float}
+
+% ============ TABLES ============
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\usepackage{makecell}
+\renewcommand\theadfont{\bfseries\small}
+
+% ============ CAPTIONS ============
+\usepackage[font=small,labelfont=bf]{caption}
+
+% ============ BIBLIOGRAPHY ============
+\usepackage[numbers,sort&compress]{natbib}
+\bibliographystyle{unsrtnat}
+
+% ============ HYPERLINKS ============
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+% ============ SECTIONS ============
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection.}{0.5em}{}
+
+% ============ CODE BLOCKS ============
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color[gray]{0.95},
+  xleftmargin=1em,
+  framexleftmargin=0.5em,
+}
+
+% ============ MISC ============
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
+
+% ============================================================
+\begin{document}
+
+% ============ TITLE ============
+\begin{center}
+{\LARGE\bfseries Цифровое почвенное картирование степной зоны Северного Казахстана:\\[4pt] Предсказание агрохимических свойств почв с использованием мультимодальных спутниковых данных и методов машинного и глубокого обучения}
+
+\vspace{1.5em}
+{\large [Авторы]}\\[0.5em]
+{\normalsize [Аффилиация]}
+\vspace{2em}
+\end{center}
+
+\input{sections/abstract}
+
+\newpage
+
+\input{sections/introduction}
+\input{sections/study_area}
+\input{sections/methods}
+\input{sections/results}
+\input{sections/discussion}
+\input{sections/conclusion}
+
+% ============================================================
+\newpage
+\bibliography{sections/references}
+
+% ============================================================
+\newpage
+\appendix
+\section{Appendix: number of features vs.\ quality curve}
+\label{sec:appendix_features}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{fig_appendix_feature_curve.png}
+  \caption{Number of features vs.\ quality curve (RF, 10-fold GroupKFold CV). The vertical dashed line marks the selected $K = 15$. For all properties the curve plateaus at 12--18~features.}
+  \label{fig:feature_curve}
+\end{figure}
+
+\end{document}

@@ -1,0 +1,203 @@
+/home/h621l/projects/science-article/math_statistics/plots.py:543: UserWarning: This pattern is interpreted as a regular expression, and has match groups. To actually get the groups, use str.extract.
+  main_vis = confound_df[confound_df["VI"].str.contains(
+Loading data from /home/h621l/projects/science-article/data/features/full_dataset.csv
+  Shape: (1215, 272)
+  Soil targets available: ['ph', 'soc', 'no3', 'p', 'k', 's']
+  Years: [np.int64(2020), np.int64(2021), np.int64(2022), np.int64(2023)]
+  Missing values in targets:
+    ph: 0 / 1215 (0.0%)
+    soc: 94 / 1215 (7.7%)
+    no3: 94 / 1215 (7.7%)
+    p: 94 / 1215 (7.7%)
+    k: 94 / 1215 (7.7%)
+    s: 94 / 1215 (7.7%)
+
+--- Running descriptive statistics ---
+--- Running intercorrelation analysis ---
+--- Running full correlation analysis ---
+--- Running seasonal analysis ---
+--- Running spatial analysis ---
+--- Computing composite spectral features ---
+--- Running composite vs single comparison ---
+--- Computing derived soil indicators ---
+--- Running variance decomposition ---
+--- Running confounding analysis ---
+--- Generating plots ---
+--- Generating report ---
+
+Report saved to: /home/h621l/projects/science-article/math_statistics/output/verification_report.txt
+
+All analyses completed in 23.0s
+Output directory: /home/h621l/projects/science-article/math_statistics/output
+
+================================================================================
+STATISTICAL VERIFICATION REPORT (Article v2)
+Article: Soil properties - RS correlations, Northern Kazakhstan
+Single and composite spectral indices
+================================================================================
+
+1. DESCRIPTIVE STATISTICS (Table 1)
+------------------------------------------------------------
+   Property    n   Mean  Median     SD    Min     Max  CV_%  Skewness  Kurtosis
+   pH (KCl) 1215   6.88    7.20   0.73   5.20    8.00  10.6     -0.73     -0.99
+     SOC, % 1121   2.42    2.44   0.57   0.64    4.41  23.6     -0.27      1.49
+ NO₃, mg/kg 1121  11.11    9.44   7.94   0.16   64.00  71.5      2.31      8.59
+P₂O₅, mg/kg 1121  25.43   18.60  20.10   3.22  150.00  79.0      2.58      8.43
+ K₂O, mg/kg 1121 651.85  665.00 165.70 106.00 1204.00  25.4     -0.49      0.81
+   S, mg/kg 1121   8.97    7.02   7.55   0.92   62.80  84.2      3.46     14.02
+
+2. SHAPIRO-WILK NORMALITY TEST
+------------------------------------------------------------
+Article claims all properties non-normal (p<0.001): ALL VERIFIED
+   Property  W_statistic p_formatted  VERIFIED
+   pH (KCl)       0.8467    1.04e-32      True
+     SOC, %       0.9640    5.09e-16      True
+ NO₃, mg/kg       0.8187    9.72e-34      True
+P₂O₅, mg/kg       0.7220    1.39e-39      True
+ K₂O, mg/kg       0.9768    1.99e-12      True
+   S, mg/kg       0.6139    2.07e-44      True
+
+3. KRUSKAL-WALLIS: YEAR DIFFERENCES
+------------------------------------------------------------
+   Property  H_statistic p_formatted  VERIFIED
+   pH (KCl)       368.75    1.30e-79      True
+     SOC, %        81.53    1.98e-18      True
+ NO₃, mg/kg       197.61    1.23e-43      True
+P₂O₅, mg/kg        40.50    1.60e-09      True
+ K₂O, mg/kg        20.53    3.48e-05      True
+   S, mg/kg        69.76    7.09e-16      True
+
+4. SOIL PROPERTY INTERCORRELATIONS (Figure 2)
+------------------------------------------------------------
+     Pair  Article_rho  Computed_rho  Difference      p_value  n_pairs  MATCH_within_0.05
+  SOC ↔ S         0.56        0.1000      0.4600 7.976104e-04     1121              False
+SOC ↔ NO₃         0.41        0.0929      0.3171 1.855499e-03     1121              False
+ pH ↔ SOC        -0.49       -0.1776      0.3124 2.125104e-09     1121              False
+
+5. SINGLE FEATURE CORRELATION CLAIMS (Section 3.3)
+------------------------------------------------------------
+             claim target         feature  article_rho  computed_rho  difference       p_value    n  MATCH_within_0.05 NOTE
+ph_gndvi_l8_spring     ph l8_GNDVI_spring       -0.605       -0.7322      0.1272 1.564868e-198 1179              False     
+            ph_map     ph     climate_MAP        0.660        0.6352      0.0248 3.331991e-134 1179               True     
+          ph_slope     ph      topo_slope        0.550        0.5898      0.0398 9.810547e-115 1215               True     
+      k_bsi_spring      k   s2_BSI_spring       -0.480       -0.4779      0.0021  5.357404e-63 1085               True     
+         p_gs_temp      p climate_GS_temp        0.480        0.4760      0.0040  1.915145e-62 1085               True     
+      p_aspect_cos      p topo_aspect_cos        0.470        0.4680      0.0020  4.241109e-62 1121               True     
+     ph_sin_aspect     ph topo_aspect_sin       -0.407       -0.4073      0.0003  9.073259e-50 1215               True     
+
+  Matched within +/-0.05: 6/7
+
+6. SEASONAL COMPARISON: SPRING vs SUMMER
+------------------------------------------------------------
+  For pH: spring stronger than summer in 8/8 indices
+
+7. COMPOSITE SPECTRAL FEATURES (Section 3.4, Table 2)
+------------------------------------------------------------
+Feature counts:
+                       Type  n_features
+   Inter-index combinations          48
+      Multi-seasonal deltas          42
+Normalised band differences          20
+                      TOTAL         110
+
+Best single vs best composite per target:
+     Target     Best_single  Single_rho         Best_composite  Composite_rho  Improvement  Composite_wins
+   pH (KCl) l8_GNDVI_spring     -0.7322             mean_GNDVI        -0.6264      -0.1058           False
+     SOC, %              mn      0.6514     delta_GNDVI_ls-spr         0.2759      -0.3755           False
+ NO₃, mg/kg              mn      0.7487 comp_GNDVI-NDRE_spring        -0.4164      -0.3323           False
+P₂O₅, mg/kg              cu      0.7201   comp_EVI-NDRE_spring        -0.3896      -0.3305           False
+ K₂O, mg/kg   s2_BSI_spring     -0.4779  comp_GNDVIxBSI_spring        -0.4880       0.0101            True
+   S, mg/kg              mg      0.8447              mean_NDVI         0.3604      -0.4843           False
+
+Specific composite claims:
+                               Claim                Feature  Article_rho  Computed_rho  Difference  MATCH    n
+ GNDVI×BSI(spring) → K₂O: ρ = -0.488  comp_GNDVIxBSI_spring       -0.488       -0.4880      0.0000   True 1085
+GNDVI−NDRE(spring) → NO₃: ρ = -0.416 comp_GNDVI-NDRE_spring       -0.416       -0.4164      0.0004   True 1085
+ BSI(spring) alone → K₂O: ρ = -0.478          s2_BSI_spring       -0.478       -0.4779      0.0001   True 1085
+       GNDVI×BSI > BSI alone for K₂O             comparison          NaN           NaN      0.0101   True    0
+  EVI/NDRE(summer) → SOC: ρ = -0.177   comp_EVI/NDRE_summer       -0.177       -0.1771      0.0001   True 1085
+
+Seasonal delta vs peak single-season:
+     Target         Best_delta  Delta_rho    Best_single_season  Single_rho  Delta_weaker
+   pH (KCl)            amp_BSI    -0.5534        s2_NDRE_spring     -0.6164          True
+     SOC, % delta_GNDVI_ls-spr     0.2759         s2_EVI_spring     -0.2968          True
+ NO₃, mg/kg  delta_NDVI_ls-sum     0.3139        s2_SAVI_spring     -0.4314          True
+P₂O₅, mg/kg            amp_BSI     0.2216       s2_GNDVI_spring      0.2540          True
+ K₂O, mg/kg  delta_BSI_sum-spr     0.3249         s2_BSI_spring     -0.4779          True
+   S, mg/kg            amp_BSI     0.2932 spectral_GNDVI_autumn      0.3233          True
+
+8. DERIVED SOIL INDICATORS (Section 3.5)
+------------------------------------------------------------
+                        Claim       derived                feature  Article_rho  Computed_rho  Difference  MATCH_within_0.05 NOTE
+             P₂O₅/K₂O → slope     P_K_ratio             topo_slope        -0.56       -0.5553      0.0047               True     
+    S/NO₃ → GNDVI mean-season   S_NO3_ratio             mean_GNDVI         0.49        0.4780      0.0120               True     
+  SOC×NO₃ → GNDVI−NDRE spring     SOC_x_NO3 comp_GNDVI-NDRE_spring        -0.46       -0.4556      0.0044               True     
+mineral_index → L8 NIR spring mineral_index        l8_SR_B5_spring        -0.47       -0.4719      0.0019               True     
+
+Top derived-soil correlations with RS:
+        derived feature      rho      p_value
+fertility_index      mg 0.819928 3.430408e-37
+fertility_index      mn 0.805680 5.103476e-35
+  mineral_index      mn 0.786263 2.482734e-32
+  mineral_index      mg 0.780808 1.258461e-31
+      SOC_x_NO3      mn 0.761162 3.022675e-29
+      SOC_x_NO3      mg 0.756556 1.012581e-28
+fertility_index      zn 0.755568 1.307846e-28
+fertility_index      fe 0.755099 1.476186e-28
+  mineral_index      zn 0.740597 5.473076e-27
+fertility_index      cu 0.735362 1.901674e-26
+
+9. VARIANCE DECOMPOSITION (Section 3.6.1)
+------------------------------------------------------------
+   Property  n_samples  n_fields    SS_total  SS_between   SS_within  Pct_between  Pct_within    ICC
+   pH (KCl)       1215        92      649.98      511.25      138.73         78.7        21.3 0.7711
+     SOC, %       1121        82      363.99      219.18      144.81         60.2        39.8 0.5739
+ NO₃, mg/kg       1121        82    70633.53    33488.29    37145.24         47.4        52.6 0.4359
+P₂O₅, mg/kg       1121        82   452393.25   239328.11   213065.13         52.9        47.1 0.4952
+ K₂O, mg/kg       1121        82 30752201.30 19227702.68 11524498.62         62.5        37.5 0.5988
+   S, mg/kg       1121        82    63903.02    14467.97    49435.05         22.6        77.4 0.1677
+
+Claims verification:
+                           Claim  Article_value  Computed_value  Difference  MATCH_within_5pct
+pH: 78.7% between-field variance           78.7            78.7         0.0               True
+ pH: 21.3% within-field variance           21.3            21.3         0.0               True
+SOC within-field variance ~39.8%           39.8            39.8         0.0               True
+
+10. pH-CONFOUNDING & SOC MECHANISMS (Section 3.6.2)
+------------------------------------------------------------
+                                             Claim  Article_value  Computed_value  Difference  MATCH_within_15pct
+      41.9% of SOC-s2_NDVI_summer is pH-confounded         41.900         41.9000      0.0000                True
+-13.7% of SOC-s2_NDVI_late_summer is pH-confounded        -13.700        -13.7000      0.0000                True
+                    Raw SOC-NDVI(summer) ρ ≈ 0.145          0.145          0.1452      0.0002                True
+             Partial SOC-NDVI(summer)|pH ρ ≈ 0.084          0.084          0.0844      0.0004                True
+
+CV vs max |rho|:
+   Property  CV_%  Max_abs_rho
+   pH (KCl)  10.6       0.7322
+     SOC, %  23.6       0.6514
+ NO₃, mg/kg  71.5       0.7487
+P₂O₅, mg/kg  79.0       0.7201
+ K₂O, mg/kg  25.4       0.4779
+   S, mg/kg  84.2       0.8447
+
+11. SPATIAL AUTOCORRELATION (MORAN'S I)
+------------------------------------------------------------
+   Property    n  Morans_I  Expected_I  z_score  p_value Spatial_autocorrelation
+   pH (KCl) 1215    0.8860   -0.000824   182.31      0.0                Positive
+     SOC, % 1121    0.6947   -0.000893   137.29      0.0                Positive
+ NO₃, mg/kg 1121    0.6007   -0.000893   119.11      0.0                Positive
+P₂O₅, mg/kg 1121    0.6758   -0.000893   133.96      0.0                Positive
+ K₂O, mg/kg 1121    0.4916   -0.000893    97.17      0.0                Positive
+   S, mg/kg 1121    0.7135   -0.000893   141.78      0.0                Positive
+
+Latitudinal gradient:
+Property  rho_with_latitude      p_value           Direction
+      pH            -0.3569 5.092906e-35 decreases northward
+     SOC             0.3472 4.237398e-33 increases northward
+
+================================================================================
+SUMMARY
+================================================================================
+Total claims verified (within +/-0.05): 15/19
+Normality tests verified: 6/6
+pH between-field variance: 78.7% (article claims 78.7%)

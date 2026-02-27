@@ -1,0 +1,93 @@
+% ============================================================
+%  Статья 1 (Q1–Q2)
+%  ВЗАИМОСВЯЗИ ФИЗИКО-ХИМИЧЕСКИХ СВОЙСТВ ПОЧВ И ДАННЫХ
+%  ДИСТАНЦИОННОГО ЗОНДИРОВАНИЯ ЗЕМЛИ В УСЛОВИЯХ СТЕПНОЙ ЗОНЫ
+%  СЕВЕРНОГО КАЗАХСТАНА
+% ============================================================
+\documentclass[a4paper,11pt]{article}
+
+% ============ ENCODING & FONTS ============
+\usepackage{fontspec}
+\setmainfont{DejaVu Serif}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}
+
+% ============ LANGUAGE ============
+\usepackage{polyglossia}
+\setdefaultlanguage{russian}
+\setotherlanguage{english}
+
+% ============ PAGE LAYOUT ============
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% ============ GRAPHICS ============
+\usepackage{graphicx}
+\graphicspath{{./figures/}{../../figures/}{../../math_statistics/output/}{../../math_statistics/output/rf/}}
+\usepackage{float}
+
+% ============ TABLES ============
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\usepackage{makecell}
+\renewcommand\theadfont{\bfseries\small}
+
+% ============ CAPTIONS ============
+\usepackage[font=small,labelfont=bf]{caption}
+
+% ============ BIBLIOGRAPHY ============
+\usepackage[numbers,sort&compress]{natbib}
+\bibliographystyle{unsrtnat}
+
+% ============ HYPERLINKS ============
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+% ============ SECTIONS ============
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection.}{0.5em}{}
+
+% ============ MISC ============
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
+
+% ============================================================
+\begin{document}
+
+% ============ TITLE ============
+\begin{center}
+{\LARGE\bfseries Цифровое почвенное картирование степной зоны Северного Казахстана. \\[4pt] Часть~1: Взаимосвязи агрохимических свойств почв и мультимодальных данных дистанционного зондирования~--- анализ 536~признаков}
+
+\vspace{1.5em}
+{\large [Авторы]}\\[0.5em]
+{\normalsize [Аффилиация]}
+\vspace{2em}
+\end{center}
+
+\input{sections/abstract}
+
+\tableofcontents
+\newpage
+
+\input{sections/introduction}
+\input{sections/study_area}
+\input{sections/methods}
+\input{sections/results}
+\input{sections/discussion}
+\input{sections/conclusion}
+
+% ============================================================
+\newpage
+\bibliography{../../references}
+
+\end{document}

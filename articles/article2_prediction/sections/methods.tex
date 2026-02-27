@@ -1,0 +1,300 @@
+% ============================================================
+\section{Методы}
+\label{sec:methods}
+% ============================================================
+
+Общий методологический пайплайн представлен на Рис.~\ref{fig:workflow2}.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  block/.style={rectangle, draw, fill=blue!8, text width=2.8cm, minimum height=0.9cm, align=center, font=\small},
+  data/.style={trapezium, trapezium left angle=70, trapezium right angle=110, draw, fill=green!8, text width=2.4cm, minimum height=0.8cm, align=center, font=\small},
+  model/.style={rectangle, draw, fill=yellow!12, text width=2.8cm, minimum height=0.9cm, align=center, font=\small},
+  result/.style={rectangle, rounded corners, draw, fill=orange!12, text width=2.8cm, minimum height=0.9cm, align=center, font=\small},
+  arr/.style={-{Stealth[length=3mm]}, thick},
+]
+% Row 1
+\node[data] (part1) {530~features\\(corr. analysis)};
+\node[block, right=0.8cm of part1] (sel) {Feature selection\\(top-15, MDI)};
+\node[data, right=0.8cm of sel] (patches) {Satellite\\patches (16/32/64)};
+\node[block, right=0.8cm of patches] (cv) {Spatial\\CV (3 strategies)};
+% Row 2
+\node[model, below=1.2cm of part1] (ml) {11 ML models\\(tabular)};
+\node[model, below=1.2cm of sel] (cnn) {ResNet-18\\(patches)};
+\node[model, below=1.2cm of patches] (cnx) {ConvNeXt+SE\\(54 channels)};
+\node[block, below=1.2cm of cv] (ablat) {Ablation study\\patch/indices};
+% Row 3
+\node[result, below=1.2cm of ml, xshift=2cm] (rank) {Model ranking\\+ leakage audit};
+\node[result, below=1.2cm of cnx, xshift=1cm] (maps) {Prediction\\maps};
+% Arrows
+\draw[arr] (part1) -- (sel);
+\draw[arr] (sel) -- (ml);
+\draw[arr] (patches) -- (cnn);
+\draw[arr] (patches) -- (cnx);
+\draw[arr] (cv) -- (ablat);
+\draw[arr] (cv.south) -- ++(0,-0.5) -| (ml.north);
+\draw[arr] (cv.south) -- ++(0,-0.5) -| (cnn.north);
+\draw[arr] (ml) -- (rank);
+\draw[arr] (cnn) -- (rank);
+\draw[arr] (cnx) -- (maps);
+\draw[arr] (ablat) -- (maps);
+\end{tikzpicture}%
+}
+\caption{Schematic diagram of the predictive modelling pipeline. Input: a master dataset of 530~features (derived via GEE) and satellite patches from GEE. Output: model ranking and prediction maps.}
+\label{fig:workflow2}
+\end{figure}
+
+\subsection{Источники данных ДЗЗ и извлечение признаков}
+\label{sec:rs_features}
+
+Данные извлечены из шести источников через Google Earth Engine~\citep{Gorelick2017} (Таблица~\ref{tab:data_sources}). Ниже представлены ключевые параметры каждого источника.
+
+\begin{table}[H]
+\centering
+\caption{Satellite and ancillary data sources used in the study}
+\label{tab:data_sources}
+\small\resizebox{\textwidth}{!}{%
+\begin{tabular}{lp{5.5cm}ccc}
+\toprule
+\thead{Source} & \thead{Parameters extracted} & \thead{Resolution} & \thead{Period} & \thead{\# Features}\\
+\midrule
+Sentinel-2~\citep{Drusch2012}
+  & 12~spectral bands + 5~vegetation / soil indices\newline
+    (NDVI, RECI, BSI, NDSI, NDWI), 4~seasons
+  & 10--60~m & 2022--2023 & 164 \\
+\addlinespace[2pt]
+Landsat-8~\citep{Roy2014, Sorenson2021}
+  & 6~reflectance bands + 3~indices $\times$~4~seasons
+  & 30~m & 2022--2023 & 120 \\
+\addlinespace[2pt]
+Sentinel-1~\citep{Torres2012}
+  & VV, VH bands $\times$~4~seasons + temporal statistics
+  & 10~m & 2022--2023 & 16 \\
+\addlinespace[2pt]
+SRTM DEM~\citep{Farr2007}
+  & Elevation, slope, aspect, TPI~\citep{Riihimaki2021}
+  & 30~m & Static & 5 \\
+\addlinespace[2pt]
+SoilGrids~v2.0~\citep{Hengl2017, Poggio2021}
+  & 7~soil variables $\times$~6~depth layers\newline
+    (\textit{excluded from final model; see text})
+  & 250~m & Static & \textit{42}$^{*}$ \\
+\addlinespace[2pt]
+ERA5-Land~\citep{MunozSabater2021}
+  & Mean annual temperature/precipitation,\newline
+    growing-season temperature/precipitation, GDD
+  & $\sim$9~km & 2022--2023 & 5 \\
+\bottomrule
+\multicolumn{5}{l}{\footnotesize $^{*}$~SoilGrids features excluded from the final feature pool to prevent target leakage (see Section~\ref{sec:limitations}).}
+\end{tabular}}
+\end{table}
+
+12-стадийный пайплайн (s01--s12) извлекает признаки из всех шести источников, однако 42~признака SoilGrids (s06) были \textbf{исключены} из итогового мастер-датасета для предотвращения утечки целевой переменной: SoilGrids~v2.0 обучен на полевых данных из пересекающегося пространственного домена~\citep{Poggio2021}, а признаки включают pH и SOC, непосредственно коррелированные с целевыми переменными.
+Итоговый мастер-датасет содержит \textbf{530~признаков}, включая: сезонные медианы каналов и индексов ($\sim$164), временны\'{e} характеристики (дельты, амплитуды, стандартные отклонения; $\sim$120), SAR-признаки (16), топографические (5), климатические (5), GLCM-текстуры~\citep{Haralick1973} (40), инженерные отношения каналов и PCA ($\sim$30), межплатформенные композиты ($\sim$14).
+Спектральные признаки извлекаются из мультиспектральных композитов~--- аналогичный подход применялся для лабораторной спектроскопии почв~\citep{Steffens2013}.
+
+\subsubsection{Двухэтапный отбор признаков}
+
+Для каждого целевого свойства:
+\begin{enumerate}[nosep]
+  \item \textbf{Фильтрация}: удаление quasi-constant признаков ($\sigma^2 < 10^{-6}$) и одного из каждой пары с $|r_{\text{Pearson}}| > 0.95$;
+  \item \textbf{Ранжирование и отбор}: ранжирование оставшихся $\sim$250--300~признаков по Mean Decrease Impurity (MDI) из Random Forest ($n\_est = 300$)~\citep{Hengl2018}; отбор \textbf{15~наиболее значимых}.
+  Выбор $K = 15$ обоснован выходом кривой <<число признаков~--- качество>> на плато при 12--18 (Рис.~\ref{fig:feature_curve} в Приложении); сравнение подходов отбора признаков для пространственных ML-задач см.~\citep{Meyer2019}.
+\end{enumerate}
+
+\textbf{Примечание:} MDI-ранжирование выполнено внутри обучающего набора каждого LOFO-фолда для избежания утечки информации через отбор признаков.
+Для основного сравнения 11~моделей использован фиксированный набор из 15~признаков, определённый по всему датасету, для обеспечения сопоставимости.
+Дополнительно проведён контрольный эксперимент с полностью честным per-fold MDI-отбором в рамках Farm-LOFO-CV (раздел~\ref{sec:perfold_features}): на каждом из 20~фолдов (по хозяйствам) независимо отбирается 15~признаков из обучающей выборки с последующей оптимизацией гиперпараметров через GridSearchCV (nested GroupKFold по полям).
+Стабильность отбора между фолдами (средний попарный IoU от $0.45$ до $0.71$ в зависимости от свойства) ниже, чем при Field-LOFO, что отражает бо\'{л}ьшую гетерогенность между хозяйствами.
+
+\subsection{Подготовка спутниковых патчей для CNN}
+\label{sec:patches}
+
+Для end-to-end DL-моделей извлечены 2D-патчи трёх размеров:
+\begin{itemize}[nosep]
+  \item 16$\times$16~пикселей (160$\times$160~м);
+  \item 32$\times$32~пикселей (320$\times$320~м);
+  \item 64$\times$64~пикселей (640$\times$640~м).
+\end{itemize}
+
+Конфигурации каналов: (i)~\textbf{базовая} (13~каналов: 12~S2 + DEM); (ii)~\textbf{расширенная} (18~каналов: +5~индексов: NDVI, BSI, NDSI, NDWI, RECI); (iii)~\textbf{мультисезонная} (54~канала: оптика $\times$~3~сезона + индексы $\times$~3 + VV, VH + DEM).
+Общее количество патчей~--- 1071 на каждый размер (14~образцов исключены из-за расположения вблизи границ сцен Sentinel-2, где невозможно извлечь полный патч без пересечения с nodata-пикселями).
+Формат NumPy~(.npy), $[C, H, W]$.
+
+\subsection{Стратегия кросс-валидации}
+\label{sec:cv_strategy}
+
+Пространственная автокорреляция почвенных свойств (Moran's $I = 0.51$--$0.86$, оценённая на полном наборе данных) требует строгой стратегии валидации~\citep{Roberts2017, Wadoux2021, Meyer2021}.
+В настоящей работе последовательно применены три стратегии, образующие \textbf{иерархию строгости} оценки.
+Во всех трёх стратегиях используется схема скользящего окна \textbf{LOFO-CV} (Leave-One-\textit{X}-Out Cross-Validation), где \textit{X} определяет единицу группировки:
+\begin{itemize}[nosep]
+  \item \textbf{Field-LOFO} (Leave-One-\textbf{Field}-Out) --- каждый фолд = одно поле (81~итерация). Минимальный пространственный разрыв: соседние поля из \textit{того же} хозяйства остаются в обучающей выборке;
+  \item \textbf{Farm-LOFO} (Leave-One-\textbf{Farm}-Out) --- каждый фолд = все поля одного хозяйства (20~итераций). Гарантирует полное отсутствие всех образцов тестируемого хозяйства в обучающей выборке, что соответствует сценарию работы на \textit{новом хозяйстве}, для которого почвенных данных нет.
+\end{itemize}
+\subsubsection{Field-LOFO-CV (81~фолд)}
+\label{sec:field_lofo_method}
+
+На каждой из 81~итерации одно поле ($\sim$13.4~образца в среднем) полностью выделяется в тестовую выборку; модель обучается на оставшихся 80~участках.
+Финальные метрики рассчитываются по агрегированным out-of-fold (OOF) предсказаниям всех 1085~образцов.
+Field-LOFO-CV является \textbf{основной стратегией} для ранжирования моделей.
+
+\subsubsection{Farm-LOFO-CV (20~хозяйств)}
+\label{sec:farm_lofo}
+
+Датасет охватывает \textbf{20~хозяйств} (от 8 до 151~образца; медиана~--- 38).
+При Farm-LOFO-CV каждое хозяйство поочерёдно выключается из обучения ($\sim$54~образца в среднем).Схема значительно строже Field-LOFO, поскольку пространственный разрыв между train и test существенно больше.
+Farm-LOFO-CV проведена для \textbf{всех 11~ML-моделей} на тех же MDI-отобранных признаках (15~для пяти свойств; для S --- 6~весенних + статических признаков, см.~разд.~\ref{sec:leakage_audit}), что позволяет корректно изолировать эффект строгости валидации от влияния алгоритма обучения.
+
+\subsubsection{Оптимизированный пространственный split (65/6/10~хозяйств)}
+\label{sec:spatial_split}
+
+Для вычислительно ёмких моделей (ablation study для CNN, ConvNeXt), требующих длительного обучения и раннего останова, а также для настройки гиперпараметров XGBoost и CatBoost, использовано фиксированное разбиение на уровне хозяйств.
+Оптимальное соотношение определено систематическим поиском: протестировано 56~комбинаций ($n_{\text{test}} \in \{4, \ldots, 14\}$, $n_{\text{val}} \in \{4, \ldots, 15\}$) при $n_{\text{train}} \geq 20$~ферм.
+Для каждой комбинации выполнено 15~случайных разбиений, каждое оценено XGBoost на всех шести целевых переменных (всего~5040 обучений).
+
+\begin{table}[H]
+\centering
+\caption{Top-5 split configurations ranked by mean Spearman~$\rho$}
+\label{tab:split_search}
+\small
+\begin{tabular}{ccccccc}
+\toprule
+\thead{$n_\text{test}$} & \thead{$n_\text{val}$} & \thead{$n_\text{train}$} & \thead{$\bar{\rho}$} & \thead{$\sigma(\rho)$} & \thead{$\bar{R}^2$} & \thead{$\overline{\text{RMSE}}$} \\
+\midrule
+\textbf{10} & \textbf{6} & \textbf{65} & \textbf{0.598} & \textbf{0.198} & 0.307 & 26.58 \\
+8  & 5  & 68 & 0.597 & 0.249 & 0.335 & 26.23 \\
+14 & 6  & 61 & 0.594 & 0.191 & 0.360 & 25.52 \\
+8  & 4  & 69 & 0.592 & 0.253 & 0.307 & 25.72 \\
+10 & 10 & 61 & 0.592 & 0.216 & 0.388 & 25.54 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+По результатам поиска выбрано разбиение \textbf{65/6/10} (80\%/7\%/12\% хозяйств), обеспечивающее наивысший $\bar{\rho} = 0.598$ при наименьшей дисперсии ($\sigma = 0.198$).
+При $n_{\text{test}} = 4$ наблюдается максимальный разброс $\sigma(\rho) = 0.29$--$0.38$; при $n_{\text{test}} \geq 8$ стандартное отклонение стабилизируется ($\sigma \leq 0.25$).
+
+\subsubsection{Нормализация}
+
+StandardScaler (z-score, статистики \emph{только} по train-подмножеству каждого фолда) применялся для DL, SVR, KNN и линейных моделей.
+Для древесных ансамблей масштабирование не выполнялось ввиду инвариантности к монотонным преобразованиям.
+
+\subsection{Модели машинного обучения}
+\label{sec:ml_models}
+
+Сравнение проведено для 11~классических ML-алгоритмов (Таблица~\ref{tab:ml_models}).
+Все модели обучены на 15~отобранных признаках с LOFO-CV (81~фолд).
+
+\begin{table}[H]
+\centering
+\caption{ML model configurations}
+\label{tab:ml_models}
+\small
+\begin{tabular}{llp{7cm}}
+\toprule
+\thead{Model} & \thead{Library} & \thead{Key hyperparameters}\\
+\midrule
+RF~\citep{Breiman2001, Hengl2018}         & scikit-learn~\citep{Pedregosa2011} & $n\_est = 500$, $max\_feat = \sqrt{p}$, $min\_leaf = 3$ \\
+ET~\citep{Geurts2006}          & scikit-learn & $n\_est = 500$, $max\_feat = \sqrt{p}$, $min\_leaf = 3$, рандомизированные пороги \\
+XGBoost~\citep{Chen2016}       & xgboost      & $n\_est = 300$, $max\_depth = 6$, $\eta = 0.1$, $\lambda = 1$, $\text{subsample} = 0.8$ \\
+CatBoost~\citep{Dorogush2018}  & catboost     & $iter = 500$, $depth = 6$, $lr = 0.05$, ordered bootstrap \\
+GBDT~\citep{Friedman2001}      & scikit-learn & $n\_est = 300$, $max\_depth = 5$, $lr = 0.1$, $\text{subsample} = 0.8$ \\
+CART                            & scikit-learn & $max\_depth = 10$, $min\_leaf = 5$ \\
+KNN                             & scikit-learn & $K = 7$, взвешенное голосование (distance) \\
+LR                              & scikit-learn & Обычный МНК, без регуляризации \\
+Ridge                           & scikit-learn & $\alpha = 1.0$ (L2-регуляризация) \\
+SGD                             & scikit-learn & $\alpha = 10^{-4}$, $penalty = \text{l2}$, $max\_iter = 1000$ \\
+SVR~\citep{Smola2004}        & scikit-learn & RBF-ядро, $C = 1.0$, $\epsilon = 0.1$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Настройка гиперпараметров.}
+Для классических ML-моделей (RF, XGBoost, GBDT, ET, KNN, SVR) применялись два подхода:
+\begin{itemize}[nosep]
+  \item \textbf{GridSearchCV} с nested 5-fold CV внутри обучающего набора каждого LOFO-фолда. Сетки компактны ($|\mathcal{G}| = 6$--$18$~комбинаций на модель; для RF: $n\_est \in \{300, 500, 800\}$, $max\_feat \in \{\sqrt{p}, \log_2 p\}$, $min\_leaf \in \{2, 3, 5\}$);
+  \item \textbf{Optuna}~\citep{Akiba2019} (TPE-сэмплер, $n\_trials = 100$, MedianPruner) --- байесовский поиск с отсечением нецелесообразных испытаний. Использован для XGBoost и CatBoost при оптимизированном split-сценарии (65/6/10~хозяйств), где обширное пространство поиска делает исчерпывающий Grid-поиск вычислительно нецелесообразным.
+\end{itemize}
+
+\subsection{Архитектуры глубокого обучения}
+\label{sec:dl_models}
+
+Все DL-модели реализованы на PyTorch~\citep{Paszke2019}.
+Гиперпараметры DL-моделей (learning rate, weight decay, patience) оптимизированы с помощью \textbf{Optuna}~\citep{Akiba2019} (TPE-сэмплер, $n\_trials = 100$, MedianPruner) на валидационном наборе пространственного split (65/6/10~хозяйств).
+
+\subsubsection{1D CNN на табличных признаках (SoilCNN1D)}
+
+Одномерная свёрточная сеть для 15~табличных признаков:
+\begin{align*}
+&\text{Input}(1,\,15) \to \text{Conv1d}(1{\to}16,\,k{=}3) \to \text{BN} \to \text{ReLU} \to \text{MaxPool}(2) \\
+&\to \text{Conv1d}(16{\to}32,\,k{=}3) \to \text{BN} \to \text{ReLU} \to \text{MaxPool}(2) \\
+&\to \text{Dropout}(0.3) \to \text{FC}(96{\to}32{\to}1)
+\end{align*}
+Обучение: 300~эпох, Adam ($\text{lr} = 10^{-3}$, $\text{wd} = 10^{-4}$), ранний останов (patience~=~30).
+
+\subsubsection{ResNet-18 на спутниковых патчах}
+
+Адаптированная ResNet-18~\citep{He2016}: стандартный первый слой $\text{Conv2d}(3{\to}64)$ заменён на $\text{Conv2d}(18{\to}64,\,k{=}7)$ для 18-канальных мультиспектральных патчей; обучение \emph{с нуля} (без ImageNet-предобучения~--- спектральная несовместимость с RGB-весами~\citep{Wang2023SSL4EO}).
+Выходной блок: $\text{Dropout}(0.3) \to \text{FC}(512{\to}128) \to \text{ReLU} \to \text{Dropout}(0.15) \to \text{FC}(128{\to}1)$.
+Аугментация: случайные отражения и повороты (0°/90°/180°/270°).
+Обучение: 60~эпох, AdamW ($\text{lr}{=}10^{-4}$, $\text{wd}{=}10^{-5}$), ReduceLROnPlateau (factor~=~0.5, patience~=~3).
+
+\subsubsection{MultiSpectralConvNeXt на мультисезонных композитах}
+\label{sec:convnext_arch}
+
+Архитектура MultiSpectralConvNeXt с блоками Squeeze-and-Excitation (SE)~\citep{Hu2018}.
+Вход~--- 54~канала: S2-оптика $\times$3~сезона (36), спектральные индексы $\times$3 (15), SAR VV/VH (2), DEM (1).
+
+\textbf{Ключевые модули (простыми словами):}
+\begin{itemize}[nosep]
+  \item \textbf{SE-блок (Squeeze-and-Excitation)}: механизм «внимания», который позволяет нейросети самой понимать, какой спектральный канал (например, инфракрасный или радарный) важнее в данный момент, и усиливать его сигнал, подавляя менее значимые;
+  \item \textbf{ConvNeXt-блок}: современная архитектура сверточных слоев, которая эффективно извлекает пространственные паттерны (форму пятен, градиенты) из спутниковых снимков, работая быстрее и точнее классических сетей.
+\end{itemize}
+
+\textbf{Полная архитектура:} Stem $\text{Conv2d}({\to}128, 1{\times}1)$~$\to$ Stage~1: Block(128)$\times$2, AvgPool~$\to$ Stage~2: Block(256)$\times$2, AvgPool~$\to$ Stage~3: Block(512)$\times$1~$\to$ Head: GAP~$\to$~Dropout(0.4)~$\to$~FC$(512{\to}128)$~$\to$~FC$(128{\to}1)$.
+
+Обучение: до 300~эпох, AdamW ($\text{lr}{=}5{\times}10^{-4}$), HuberLoss, ранний останов (patience~=~20), AMP (mixed precision). Аугментация: аналогично ResNet-18.
+
+\subsection{Метрики оценки и статистический анализ}
+\label{sec:metrics}
+
+\begin{itemize}[nosep]
+  \item \textbf{Spearman~$\rho$} (основная)~--- ранговая корреляция, устойчивая к ненормальности и монотонным нелинейностям;
+  \item \textbf{$R^2$}~--- коэффициент детерминации:
+  \begin{equation}
+    R^2 = 1 - \frac{\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}{\sum_{i=1}^{n}(y_i - \bar{y})^2};
+  \end{equation}
+  \item \textbf{RMSE}~--- среднеквадратическая ошибка:
+  \begin{equation}
+    \text{RMSE} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2};
+  \end{equation}
+  \item \textbf{MAE}~--- средняя абсолютная ошибка:
+  \begin{equation}
+    \text{MAE} = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i|;
+  \end{equation}
+  \item \textbf{RPD} (Ratio of Performance to Deviation)~--- отношение стандартного отклонения наблюдений к RMSE~\citep{Chang2001}:
+  \begin{equation}
+    \text{RPD} = \frac{\text{SD}_{\text{obs}}}{\text{RMSE}};
+  \end{equation}
+  RPD~$> 2.0$~--- хорошая предсказательная способность, $1.4$--$2.0$~--- приемлемая, $< 1.4$~--- модель непригодна для количественных предсказаний;
+  \item \textbf{CCC} (Lin's Concordance Correlation Coefficient)~--- одновременно оценивает точность и правильность (agreement) предсказаний~\citep{Lin1989}:
+  \begin{equation}
+    \rho_c = \frac{2\,\rho_{xy}\,s_x\,s_y}{s_x^2 + s_y^2 + (\bar{x} - \bar{y})^2},
+  \end{equation}
+  где $\rho_{xy}$~--- коэффициент Пирсона, $s_x, s_y$~--- стандартные отклонения, $\bar{x}, \bar{y}$~--- средние наблюдений и предсказаний.
+  CCC~$> 0.90$~--- отличное, $0.65$--$0.90$~--- умеренное согласие~\citep{McBride2005}.
+\end{itemize}
+
+Для оценки доли между-полевой дисперсии рассчитывался коэффициент внутриклассовой корреляции (ICC, Intraclass Correlation Coefficient) по модели случайных эффектов (one-way random effects, ICC(1,1)) с использованием библиотеки \texttt{pingouin}.
+Для оценки стабильности метрик при Farm-LOFO-CV (20~фолдов) рассчитывались стандартные ошибки среднего (SEM).
+
+\noindent\textbf{Примечание}: для свойств с сильно скошенным распределением (S: асимметрия~3.54; P$_2$O$_5$: 2.54) $R^2$ может быть обманчиво высоким при предсказании околосреднего уровня, тогда как $\rho$ остаётся низким; поэтому $\rho$ является основной метрикой ранжирования. Выбор Spearman~$\rho$ в качестве основной метрики обусловлен тремя факторами: (1)~ненормальностью всех шести свойств ($p < 0.001$, Шапиро--Уилка), (2)~устойчивостью к монотонным нелинейностям (типичным для древесных ансамблей), и (3)~нечувствительностью к выбросам, искажающим $R^2$ для свойств со скошенным распределением~\citep{Wadoux2021}.
+
+\subsection{Вычислительная среда}
+\label{sec:compute_env}
+
+Python~3.10; PyTorch~2.1 (CUDA~12.1); scikit-learn~1.3; xgboost~2.0; catboost~1.2.
+Обучение ML-моделей: Intel Core i9-12900K, 64~GB~RAM.
+Обучение DL-моделей: NVIDIA RTX~3090 (24~GB VRAM); среднее время обучения одной модели ConvNeXt~--- $\sim$12~мин (при mixed precision).
+Все расчёты воспроизводимы ($\text{SEED} = 42$; фиксация для PyTorch, NumPy, Python random).

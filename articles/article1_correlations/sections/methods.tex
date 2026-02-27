@@ -1,0 +1,192 @@
+% ============================================================
+\section{Методы}
+\label{sec:methods}
+% ============================================================
+
+Общий методологический пайплайн представлен на Рис.~\ref{fig:workflow}.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  block/.style={rectangle, draw, fill=blue!8, text width=3.2cm, minimum height=1.0cm, align=center, font=\small},
+  data/.style={trapezium, trapezium left angle=70, trapezium right angle=110, draw, fill=green!8, text width=2.6cm, minimum height=0.8cm, align=center, font=\small},
+  result/.style={rectangle, rounded corners, draw, fill=orange!12, text width=3.2cm, minimum height=1.0cm, align=center, font=\small},
+  arr/.style={-{Stealth[length=3mm]}, thick},
+]
+% Row 1: Data sources
+\node[data] (s2)  {Полевые пробы\\$n=1085$};
+\node[data, right=1.2cm of s2] (gee) {GEE пайплайн\\6 источников};
+\node[block, right=1.2cm of gee] (feat) {Инженерия\\536 признаков};
+
+% Row 2: Analysis
+\node[block, below=1.2cm of s2] (desc) {Описательная\\статистика};
+\node[block, below=1.2cm of gee] (corr) {Spearman $\rho$\\BH FDR коррекция};
+\node[block, below=1.2cm of feat] (moran) {Moran $I$\\Автокорреляция};
+
+% Row 3: Advanced
+\node[block, below=1.2cm of desc] (icc) {Декомпозиция\\дисперсии (ICC)};
+\node[block, below=1.2cm of corr] (conf) {Конфаундинг\\(pH медиатор)};
+\node[result, below=1.2cm of moran] (out) {Иерархия\\предсказуемости\\$\to$ Часть~2};
+
+% Arrows
+\draw[arr] (s2) -- (desc);
+\draw[arr] (s2) -- (gee);
+\draw[arr] (gee) -- (feat);
+\draw[arr] (feat) -- (corr);
+\draw[arr] (desc) -- (corr);
+\draw[arr] (corr) -- (moran);
+\draw[arr] (corr) -- (conf);
+\draw[arr] (desc) -- (icc);
+\draw[arr] (icc) -- (out);
+\draw[arr] (conf) -- (out);
+\draw[arr] (moran) -- (out);
+\end{tikzpicture}%
+}
+\caption{Схема методологического пайплайна корреляционного анализа (Часть~1). Трапеции~--- входные данные, прямоугольники~--- аналитические блоки, скруглённый блок~--- итоговый выход для Части~2.}
+\label{fig:workflow}
+\end{figure}
+
+\subsection{Источники данных ДЗЗ}
+\label{sec:rs_sources}
+
+Для каждого участка через Google Earth Engine~\citep{Gorelick2017} извлечены данные из шести источников (Таблица~\ref{tab:sources}).
+
+\begin{table}[H]
+\centering
+\caption{Источники спутниковых и вспомогательных данных}
+\label{tab:sources}
+\small
+\begin{tabular}{L{2.2cm}L{3.5cm}L{4.0cm}C{1.6cm}C{2.5cm}}
+\toprule
+\thead{Источник} & \thead{Датасет GEE} & \thead{Параметры} & \thead{Разре-\\шение} & \thead{Период} \\
+\midrule
+Sentinel-2  & COPERNICUS/ S2\_SR\_HARMONIZED    & 12 каналов + 5 индексов (NDVI, NDRE, GNDVI, SAVI, EVI) $\times$ 4 сезона & 10--60\,м & Апр--Окт 2020--2023 \\
+Landsat-8   & LANDSAT/ LC08/C02/T1\_L2           & 6 каналов + 3 индекса (NDVI, GNDVI, BSI) $\times$ 4 сезона & 30\,м & Апр--Окт 2020--2023 \\
+Sentinel-1  & COPERNICUS/ S1\_GRD                & VV, VH ($\gamma^0$, IW mode) & 10\,м & Весь год 2020--2023 \\
+SRTM DEM    & USGS/SRTMGL1\_003                  & Высота, уклон, аспект, кривизна, TPI & 30\,м & Статич. \\
+SoilGrids   & ISRIC/SoilGrids~v2.0               & 7 переменных $\times$ 6 глубинных слоёв (0--200~см) & 250\,м & Статич. \\
+ERA5-Land   & ECMWF/ERA5\_LAND                   & $T_{2m}$, осадки, GDD & $\sim$9\,км & 2020--2023 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Sentinel-2.} Surface Reflectance L2A (Sen2Cor). Сезонные медианные композиты по четырём фенологическим окнам: весна (апрель--май), лето (июнь--июль), позднее лето (август), осень (сентябрь--октябрь). Маскирование облачности по QA60 ($\leq$10\%). Специальные индексы: NDVI~$= (B8-B4)/(B8+B4)$~\citep{Tucker1979}, NDRE~$= (B8-B5)/(B8+B5)$, GNDVI~$= (B8-B3)/(B8+B3)$, SAVI~$= 1.5(B8-B4)/(B8+B4+0.5)$, EVI~$= 2.5(B8-B4)/(B8+6B4-7.5B2+1)$.
+
+\textbf{Landsat-8.} Collection~2, Tier~1, Level~2. Индексы: NDVI, GNDVI, BSI~$= ((B6+B4)-(B8+B2))/((B6+B4)+(B8+B2))$.
+
+\textbf{Sentinel-1~SAR.} Сезонные медианы бэкскаттера VV и VH, временны\'{е} статистики ($\mu$, $\sigma$).
+
+\textbf{SRTM.} Абсолютная высота, уклон, экспозиция (sin/cos), кривизна профиля, TPI (окно 300~м).
+
+\textbf{SoilGrids~v2.0.} Песок, ил, глина~(\%); SOC~(г/кг); pH\,(H$_2$O); CEC~(cmol(+)/кг); N~(г/кг) для 6 глубинных слоёв (0--5, 5--15, 15--30, 30--60, 60--100, 100--200~см)~\citep{Hengl2017}.
+
+\textbf{ERA5-Land.} Среднегодовая температура (MAT), годовая сумма осадков (MAP), средняя температура и осадки вегетационного периода (GS\_temp, GS\_precip), сумма активных температур (GDD)~\citep{MunozSabater2021}.
+
+\subsection{Пайплайн извлечения и инженерии признаков}
+\label{sec:feature_pipeline}
+
+Извлечение реализовано 12-стадийным пайплайном (s01--s12), формирующим мастер-датасет из \textbf{536~признаков}:
+\begin{itemize}[nosep]
+  \item Спектральные каналы и индексы (S2, L8): $\sim$164 признака;
+  \item Временны\'{е} характеристики ($\Delta$, амплитуды, std): $\sim$120;
+  \item SAR VV/VH + статистики: 16;
+  \item Топографические (SRTM): 5;
+  \item Почвенные фоновые (SoilGrids): 42;
+  \item Климатические (ERA5): 5;
+  \item Текстурные GLCM~\citep{Haralick1973} (контраст, энтропия, диссимиляция, ASM, IDM $\times$ 2 канала $\times$ 4 сезона): 40;
+  \item Инженерные (отношения каналов, PCA): $\sim$30;
+  \item Мультисенсорные межплатформенные: $\sim$14;
+  \item \textbf{Композитные} (раздел~\ref{sec:composite_def}): 110.
+\end{itemize}
+
+Пропущенные значения ($<$0.3\%~мастер-датасета) заполнены линейной интерполяцией по соседним сезонам. Quasi-constant признаки ($\sigma^2 < 10^{-6}$) удалены.
+
+\subsubsection{Композитные спектральные признаки}
+\label{sec:composite_def}
+
+Помимо одиночных индексов, вычислены три типа составных признаков (\textbf{110 шт.}):
+
+\begin{enumerate}[nosep]
+  \item \textbf{Межиндексные комбинации} (48): попарные произведения, разности и отношения 7 вегетационных индексов (NDVI, NDRE, GNDVI, EVI, SAVI, BSI, MSI) по 4 сезонам --- 12 пар $\times$ 4 сезона;
+  \item \textbf{Мультисезонные дельты} (42): $\Delta$NDVI$_{\text{лето}-\text{весна}}$, амплитуда (max$-$min), среднесезонные значения --- 7 индексов $\times$ 6 комбинаций;
+  \item \textbf{Нормализованные разности полос} (20): NDI(B5,B4), NDI(B11,B12), B11/B8, SWIR/NIR и~др. --- 5 формул $\times$ 4 сезона.
+\end{enumerate}
+
+\subsubsection{Производные почвенные индикаторы}
+\label{sec:derived_indicators}
+
+Для расширения аналитического пространства вычислены \textbf{9 производных индикаторов}:
+\begin{enumerate}[nosep]
+  \item SOC/NO$_3$ --- прокси C:N;
+  \item SOC$\times$NO$_3$ --- пул органического азота;
+  \item S/NO$_3$ --- баланс S--N;
+  \item NO$_3 + 0.5\cdot$S --- индекс минерализации;
+  \item P$_2$O$_5$/K$_2$O --- баланс макроэлементов;
+  \item $|\text{pH} - 7.0|$ --- отклонение от нейтральности;
+  \item SOC$\times$pH --- интерактивный эффект;
+  \item Нормированный индекс плодородия;
+  \item Сумма нутриентов.
+\end{enumerate}
+
+\subsection{Статистические методы}
+\label{sec:stat_methods}
+
+\subsubsection{Описательная статистика и тесты нормальности}
+
+Для каждого свойства: среднее, медиана, SD, CV, асимметрия, эксцесс. Нормальность --- тест Шапиро--Уилка ($\alpha = 0.05$). Межгодовые различия --- тест Крускала--Уоллиса ($H_0$: медианы равны для всех лет).
+
+\subsubsection{Ранговая корреляция Спирмена}
+\label{sec:spearman}
+
+Для каждой пары <<свойство $y_j$ --- признак $x_i$>> вычислен коэффициент:
+\begin{equation}
+\rho = 1 - \frac{6\sum_{k=1}^{n} d_k^2}{n(n^2 - 1)},
+\end{equation}
+где $d_k$ --- разность рангов $k$-го наблюдения. Выбор ранговой корреляции обусловлен: (i)~подтверждённой ненормальностью всех целевых переменных; (ii)~устойчивостью к нелинейным монотонным зависимостям; (iii)~робастностью к выбросам~\citep{ViscarraRossel2006}.
+
+Коррекция множественных сравнений ($>$3200 пар) --- метод Бенджамини--Хохберга (BH FDR, $\alpha = 0.05$), применённый раздельно для каждого целевого свойства.
+
+\subsubsection{Интеркорреляция почвенных свойств}
+
+Попарные корреляции Спирмена между 6 целевыми переменными для оценки скрытых зависимостей и мультиколлинеарности.
+
+\subsubsection{Пространственная автокорреляция}
+\label{sec:morans_method}
+
+Глобальный индекс Морана~$I$:
+\begin{equation}
+I = \frac{n}{S_0} \cdot \frac{\mathbf{z}^\top \mathbf{W} \mathbf{z}}{\mathbf{z}^\top \mathbf{z}},
+\label{eq:moran}
+\end{equation}
+где $\mathbf{z} = (x_i - \bar{x})$, $\mathbf{W}$ --- матрица пространственных весов (обратные расстояния, полоса пропускания 50~км, рядовая стандартизация), $S_0 = \sum_{i,j} w_{ij}$. Значимость оценена $z$-тестом.
+
+Дополнительно рассчитаны ранговые корреляции каждого свойства с широтой для оценки зонального градиента.
+
+\subsubsection{Иерархическая декомпозиция дисперсии}
+\label{sec:variance_decomp_method}
+
+Общая сумма квадратов ($SS_{\text{total}}$) разложена на компоненты:
+\begin{equation}
+SS_{\text{total}} = SS_{\text{between}} + SS_{\text{within}},
+\end{equation}
+где <<between>> --- между полевыми участками (81~группа хозяйств), <<within>> --- внутри участков. Рассчитан внутриклассовый коэффициент корреляции (ICC):
+\begin{equation}
+\text{ICC} = \frac{\sigma^2_{\text{between}}}{\sigma^2_{\text{between}} + \sigma^2_{\text{within}}}.
+\end{equation}
+
+\subsubsection{Конфаундинг-анализ}
+\label{sec:confounding_method}
+
+Для пар <<SOC --- спектральный индекс>> оценена нулевая ($\rho_0$) и частная ($\rho_{\text{partial}|\text{pH}}$) ранговая корреляция с контролем pH. Вклад конфаундинга:
+\begin{equation}
+C_{\text{pH}} (\%) = \frac{|\rho_0| - |\rho_{\text{partial}|\text{pH}}|}{|\rho_0|} \times 100.
+\end{equation}
+
+\subsubsection{Сезонный анализ}
+
+Для каждого свойства попарное сравнение $|\rho|$ между весенними и летними аналогами ($\geq$8~общих индексов). Результат кодирован как доля индексов, для которых весна информативнее.
+
+\subsubsection{Программное обеспечение}
+
+Python~3.10: scipy~1.11, statsmodels~0.14, pysal~2.9 (Moran~$I$), pandas~2.0, numpy~1.24. Все расчёты воспроизводимы ($\text{SEED} = 42$).

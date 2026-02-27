@@ -1,0 +1,44 @@
+[project]
+name = "science-article"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "earthengine-api>=1.4.0",
+    "geopandas>=1.0.0",
+    "pandas>=2.2.0",
+    "shapely>=2.0.0",
+    "requests>=2.31.0",
+    "openpyxl>=3.1.0",
+    "pytest>=8.0.0",
+    "pytest-mock>=3.12.0",
+    "scikit-gstat>=1.0.0",
+    "scikit-image>=0.24.0",
+    "scikit-learn>=1.5.0",
+    "scipy>=1.13.0",
+    "matplotlib>=3.9.0",
+    "seaborn>=0.13.0",
+    "statsmodels>=0.14.0",
+    "chromadb>=0.5.0",
+    "xgboost>=3.2.0",
+    "catboost>=1.2.10",
+    "rasterio>=1.5.0",
+    "torchvision>=0.25.0",
+]
+
+[tool.pyrefly]
+# set the directory Pyrefly will search for files to type check
+project-includes = [
+    "a", "b/c/d", "e"
+]
+
+# manually set the `sys.platform` Pyrefly will assume when type checking
+python-platform = "linux"
+
+# a table mapping error codes to an `is-enabled` boolean
+[tool.pyrefly.errors]
+# disable `bad-assignment` errors
+bad-assignment = false
+# disable `bad-return` errors
+bad-return = false

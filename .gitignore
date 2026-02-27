@@ -1,0 +1,85 @@
+# ═══════════════════════════════════════════════════════
+#  science-article .gitignore
+# ═══════════════════════════════════════════════════════
+
+# ────── Python ──────
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+build/
+dist/
+wheels/
+.pytest_cache/
+.ruff_cache/
+
+# ────── Virtual environments ──────
+.venv/
+ML/.venv/
+
+# ────── Data (heavy) ──────
+data/
+raw_data/
+soil_analysis.db
+
+# ────── ML results & model artefacts ──────
+ML/results/
+catboost_info/
+*.joblib
+*.pkl
+*.h5
+*.pt
+*.pth
+*.onnx
+
+# ────── ChromaDB ──────
+chroma_db/
+
+# ────── LaTeX build artefacts ──────
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+
+# ────── Compiled PDFs (articles) ──────
+articles/*/main.pdf
+articles/article2_prediction/figures/*.pdf
+
+# ────── Etalon articles (reference PDFs) ──────
+All_Ethalon-Article-Completed/
+
+# ────── Figures (generated, reproducible from scripts) ──────
+figures/
+math_statistics/output/
+
+# ────── Temp / test files ──────
+_tmp_*.py
+_check_*.py
+basemap_test.png
+heatmap_test.png
+es1c02479_si_001.pdf
+check_farms.py
+*.xlsx
+
+# ────── OS / IDE ──────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ────── Git push script ──────
+gitpush.sh
+
+# ────── uv lock (optional — uncomment if you want to track it) ──────
+# uv.lock
