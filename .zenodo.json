@@ -1,0 +1,36 @@
+{
+  "title": "Digital Soil Mapping — Northern Kazakhstan: Code & Models",
+  "upload_type": "software",
+  "description": "<p>Source code for digital soil mapping in the steppe zone of Northern Kazakhstan (Kostanay Region).</p><p>Predicts six agrochemical soil properties (pH, SOC, NO₃, P₂O₅, K₂O, S) from multimodal satellite imagery (Sentinel-2, Landsat-8, Sentinel-1, SRTM DEM, ERA5-Land) using 11 ML models and 3 DL architectures under three spatial validation strategies.</p><p><strong>Pipeline:</strong> GEE feature extraction → statistical analysis → ML/DL training → spatial prediction maps.</p>",
+  "creators": [
+    {"name": "Ysqaq, A.", "orcid": "0000-0002-8313-8982"},
+    {"name": "Yermoldina, G.T.", "orcid": "0000-0003-2143-7618"},
+    {"name": "Nugmanov, A.B.", "orcid": "0000-0002-7060-3996"},
+    {"name": "Rakhimbayev, B.S.", "orcid": "0000-0003-3852-200X"},
+    {"name": "Suyimbayeva, Zh.", "orcid": "0000-0002-2347-356X"},
+    {"name": "Fominov, V.D.", "orcid": "0009-0002-1663-1803"},
+    {"name": "Irzhanov, Zh.B.", "orcid": "0009-0002-4009-3507"},
+    {"name": "Paramonova, T.A.", "orcid": "0009-0007-0603-9407"},
+    {"name": "Bulayev, A.G.", "orcid": "0000-0001-7914-9817"}
+  ],
+  "access_right": "open",
+  "license": "MIT",
+  "keywords": [
+    "digital soil mapping",
+    "remote sensing",
+    "machine learning",
+    "deep learning",
+    "random forest",
+    "CNN",
+    "Northern Kazakhstan",
+    "precision agriculture"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.19496302",
+      "relation": "isSupplementedBy",
+      "resource_type": "dataset",
+      "scheme": "doi"
+    }
+  ]
+}
