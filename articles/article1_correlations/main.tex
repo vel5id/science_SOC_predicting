@@ -7,15 +7,11 @@
 \documentclass[a4paper,11pt]{article}
 
 % ============ ENCODING & FONTS ============
-\usepackage{fontspec}
-\setmainfont{DejaVu Serif}
-\setsansfont{DejaVu Sans}
-\setmonofont{DejaVu Sans Mono}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
 
 % ============ LANGUAGE ============
-\usepackage{polyglossia}
-\setdefaultlanguage{russian}
-\setotherlanguage{english}
+\usepackage[english,russian]{babel}
 
 % ============ PAGE LAYOUT ============
 \usepackage[margin=2.5cm]{geometry}
@@ -61,12 +57,18 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
 
+% ============ ABSTRACT COMPATIBILITY ============
+% abstract.tex uses MDPI-style \abstract{text}; standard article uses environment
+\let\origabstract\abstract
+\let\origendabstract\endabstract
+\renewcommand{\abstract}[1]{\origabstract #1\origendabstract}
+
 % ============================================================
 \begin{document}
 
 % ============ TITLE ============
 \begin{center}
-{\LARGE\bfseries Цифровое почвенное картирование степной зоны Северного Казахстана. \\[4pt] Часть~1: Взаимосвязи агрохимических свойств почв и мультимодальных данных дистанционного зондирования~--- анализ 536~признаков}
+{\LARGE\bfseries Цифровое почвенное картирование степной зоны Северного Казахстана: \\[4pt] взаимосвязи агрохимических свойств почв и мультимодальных данных дистанционного зондирования~--- анализ 530~признаков}
 
 \vspace{1.5em}
 {\large [Авторы]}\\[0.5em]
@@ -88,6 +90,6 @@
 
 % ============================================================
 \newpage
-\bibliography{../../references}
+\bibliography{sections/references}
 
 \end{document}

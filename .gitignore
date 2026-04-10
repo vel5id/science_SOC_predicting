@@ -27,6 +27,9 @@ soil_analysis.db
 
 # ────── ML results & model artefacts ──────
 ML/results/
+ML/ml_models*/
+ML/_*.py
+ML/farm_split_results.csv
 catboost_info/
 *.joblib
 *.pkl
@@ -34,6 +37,10 @@ catboost_info/
 *.pt
 *.pth
 *.onnx
+
+# ────── Pre-ML artefacts ──────
+pre-ml/checkpoints/*.png
+pre-ml/results/
 
 # ────── ChromaDB ──────
 chroma_db/
@@ -63,17 +70,56 @@ All_Ethalon-Article-Completed/
 figures/
 math_statistics/output/
 
-# ────── Temp / test files ──────
-_tmp_*.py
-_check_*.py
+# ────── Article auxiliary files ──────
+articles/*/figures_1/
+articles/*/sections_en/
+articles/*_flat.tex
+articles/*_mdpi.tex
+articles/*/tex_to_docx*.py
+articles/*/crop_tikz.py
+articles/*/find_tikz_pages.py
+articles/*/render_tikz_standalone.py
+articles/*/postprocess_docx.py
+articles/*/make_reference_docx.py
+articles/*/tex_tables_to_excel.py
+articles/*/tex_to_docx_custom.py
+articles/*/tex_to_docx_v4.py
+articles/**/reference.docx
+articles/**/article_draft.md
+articles/article2_prediction/output.log*
+articles/article2_prediction/_debug_figs.py
+articles/article1_correlations/Definitions/
+
+# ────── Temp / scratch / test files ──────
+_*.py
 basemap_test.png
 heatmap_test.png
 es1c02479_si_001.pdf
-check_farms.py
+*.bak
+extract_mpc.log
+article_draft.toc
+
+# ────── Generated documents ──────
+*.docx
 *.xlsx
+
+# ────── Windows scripts ──────
+*.bat
+*.ps1
+
+# ────── WSL artefacts ──────
+*:Zone.Identifier
+
+# ────── Planning & service files ──────
+*_PLAN.md
+cols.txt
+run_all_output_verification.txt
 
 # ────── Exceptions: soil analysis data (for reproducibility) ──────
 !data/soil_analysis.xlsx
+
+# ────── Claude Code local settings ──────
+.claude/
 
 # ────── OS / IDE ──────
 .DS_Store
@@ -83,6 +129,9 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# ────── Not for publication ──────
+not_for_publication/
 
 # ────── Git push script ──────
 gitpush.sh
