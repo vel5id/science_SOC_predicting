@@ -92,6 +92,7 @@ articles/article1_correlations/Definitions/
 
 # ────── Temp / scratch / test files ──────
 _*.py
+!__init__.py
 basemap_test.png
 heatmap_test.png
 es1c02479_si_001.pdf
