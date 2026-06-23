@@ -330,7 +330,7 @@ print("\nRendering summary figure ...")
 n_elements = len(oof_results)
 cols_order  = [c for c in CHEM_LABELS if c in oof_results]
 
-fig = plt.figure(figsize=(16, 5 + 3.5 * n_elements), facecolor="#0a0a0a")
+fig = plt.figure(figsize=(16, 5 + 3.5 * n_elements), facecolor="white")
 gs  = gridspec.GridSpec(
     n_elements + 1, 2,
     height_ratios=[2.5] + [3.0] * n_elements,
@@ -340,7 +340,7 @@ gs  = gridspec.GridSpec(
 
 # ── Panel 0: ρ comparison bar chart ──────────────────────────────
 ax0 = fig.add_subplot(gs[0, :])
-ax0.set_facecolor("#111111")
+ax0.set_facecolor("#f5f5f5")
 
 labels   = [CHEM_LABELS[c] for c in cols_order]
 rho_tr   = [oof_results[c]["rho_train"] for c in cols_order]
@@ -361,24 +361,24 @@ err_lo = [rho_cv_v[i] - ci_lo_v[i] for i in range(n_elements)]
 err_hi = [ci_hi_v[i]  - rho_cv_v[i] for i in range(n_elements)]
 ax0.errorbar(x + w/2, rho_cv_v,
              yerr=[err_lo, err_hi],
-             fmt="none", color="white", capsize=4, linewidth=1.2, zorder=4)
+             fmt="none", color="black", capsize=4, linewidth=1.2, zorder=4)
 
 # Zero line
 ax0.axhline(0, color="#555555", linewidth=0.8, linestyle="--")
 
 ax0.set_xticks(x)
-ax0.set_xticklabels(labels, color="white", fontsize=9)
-ax0.set_ylabel("Spearman ρ", color="white", fontsize=9)
-ax0.tick_params(colors="white")
-ax0.set_facecolor("#111111")
+ax0.set_xticklabels(labels, color="black", fontsize=9)
+ax0.set_ylabel("Spearman ρ", color="black", fontsize=9)
+ax0.tick_params(colors="black")
+ax0.set_facecolor("#f5f5f5")
 for spine in ax0.spines.values():
-    spine.set_edgecolor("#333333")
+    spine.set_edgecolor("lightgray")
 ax0.set_title(
     f"In-sample vs Cross-validated Spearman ρ — Geo-aware Ridge  |  "
     f"LOFO-CV  |  Bootstrap CI 95%  |  {FARM}, {YEAR}",
-    color="white", fontsize=10, fontweight="bold", pad=8,
+    color="black", fontsize=10, fontweight="bold", pad=8,
 )
-ax0.legend(facecolor="#1a1a1a", edgecolor="#444444", labelcolor="white", fontsize=8)
+ax0.legend(facecolor="lightyellow", edgecolor="lightgray", labelcolor="black", fontsize=8)
 ax0.set_ylim(-1.05, 1.05)
 
 # Annotate bars with values
@@ -405,7 +405,7 @@ for row_i, col in enumerate(cols_order):
 
     # Left panel: OOF scatter
     ax_sc = fig.add_subplot(gs[row_i + 1, 0])
-    ax_sc.set_facecolor("#111111")
+    ax_sc.set_facecolor("#f5f5f5")
 
     vmin_, vmax_ = np.percentile(y_true, 2), np.percentile(y_true, 98)
     sc = ax_sc.scatter(y_true, y_pred, c=y_true,
@@ -422,33 +422,33 @@ for row_i, col in enumerate(cols_order):
     ax_sc.plot(xr, np.polyval(z, xr), color="#e05c4a", linewidth=1.2,
                zorder=4, label="OOF trend")
 
-    ax_sc.set_xlabel(f"Observed {label}", color="white", fontsize=8)
-    ax_sc.set_ylabel(f"Predicted {label}", color="white", fontsize=8)
-    ax_sc.tick_params(colors="white", labelsize=7)
+    ax_sc.set_xlabel(f"Observed {label}", color="black", fontsize=8)
+    ax_sc.set_ylabel(f"Predicted {label}", color="black", fontsize=8)
+    ax_sc.tick_params(colors="black", labelsize=7)
     for spine in ax_sc.spines.values():
-        spine.set_edgecolor("#333333")
-    ax_sc.legend(facecolor="#1a1a1a", edgecolor="#444", labelcolor="white", fontsize=6.5)
+        spine.set_edgecolor("lightgray")
+    ax_sc.legend(facecolor="lightyellow", edgecolor="lightgray", labelcolor="black", fontsize=6.5)
 
     txt = (f"ρ_cv = {rho_cv:+.3f}  [95%: {ci_lo:+.3f}, {ci_hi:+.3f}]\n"
            f"RMSE = {rmse:.3f}  R² = {r2:+.3f}  n = {res['n_oof']}")
-    ax_sc.set_title(f"{label}  —  OOF scatter (LOFO-CV)", color="white",
+    ax_sc.set_title(f"{label}  —  OOF scatter (LOFO-CV)", color="black",
                     fontsize=8.5, fontweight="bold")
     ax_sc.text(0.03, 0.97, txt, transform=ax_sc.transAxes,
-               ha="left", va="top", color="white", fontsize=7,
-               bbox=dict(boxstyle="round,pad=0.3", facecolor="#1a1a1a",
+               ha="left", va="top", color="black", fontsize=7,
+               bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow",
                          edgecolor="#555", alpha=0.88))
 
     cb = fig.colorbar(sc, ax=ax_sc, pad=0.02, shrink=0.85)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=6)
-    cb.outline.set_edgecolor("#333")
-    cb.set_label(label, color="white", fontsize=6)
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=6)
+    cb.outline.set_edgecolor("lightgray")
+    cb.set_label(label, color="black", fontsize=6)
 
     # Right panel: bootstrap distribution of ρ_cv
     ax_bs = fig.add_subplot(gs[row_i + 1, 1])
-    ax_bs.set_facecolor("#111111")
+    ax_bs.set_facecolor("#f5f5f5")
 
     ax_bs.hist(boot, bins=40, color="#e05c4a", alpha=0.75, edgecolor="none", zorder=3)
-    ax_bs.axvline(rho_cv, color="white",   linewidth=1.5, linestyle="-",  zorder=4,
+    ax_bs.axvline(rho_cv, color="black",   linewidth=1.5, linestyle="-",  zorder=4,
                   label=f"ρ_cv = {rho_cv:+.3f}")
     ax_bs.axvline(ci_lo,  color="#4a9eda", linewidth=1.2, linestyle="--", zorder=4,
                   label=f"CI 2.5% = {ci_lo:+.3f}")
@@ -458,24 +458,27 @@ for row_i, col in enumerate(cols_order):
                   linestyle=":", zorder=4,
                   label=f"ρ_train = {res['rho_train']:+.3f}")
 
-    ax_bs.set_xlabel("Spearman ρ", color="white", fontsize=8)
-    ax_bs.set_ylabel("Bootstrap count", color="white", fontsize=8)
-    ax_bs.tick_params(colors="white", labelsize=7)
+    ax_bs.set_xlabel("Spearman ρ", color="black", fontsize=8)
+    ax_bs.set_ylabel("Bootstrap count", color="black", fontsize=8)
+    ax_bs.tick_params(colors="black", labelsize=7)
     for spine in ax_bs.spines.values():
-        spine.set_edgecolor("#333333")
-    ax_bs.legend(facecolor="#1a1a1a", edgecolor="#444", labelcolor="white",
+        spine.set_edgecolor("lightgray")
+    ax_bs.legend(facecolor="lightyellow", edgecolor="lightgray", labelcolor="black",
                  fontsize=6.5, loc="upper left")
     ax_bs.set_title(f"{label}  —  Bootstrap distribution of ρ_cv  (n={N_BOOT})",
-                    color="white", fontsize=8.5, fontweight="bold")
+                    color="black", fontsize=8.5, fontweight="bold")
 
 fig.suptitle(
     f"Spatial LOFO-CV — Geo-aware Ridge(spectral+UTM)  |  {FARM}, {YEAR}  |  "
     f"field-level trained, pixel-level applied  |  honest out-of-fold evaluation",
-    fontsize=11, color="white", y=0.995,
+    fontsize=11, color="black", y=0.995,
 )
 
 out_cv = OUT_DIR / f"cv_summary_{FARM.replace(' ', '_')}_{YEAR}.png"
-fig.savefig(out_cv, dpi=150, bbox_inches="tight", facecolor="#0a0a0a")
+fig.savefig(OUT_DIR / f"cv_summary_{FARM.replace(' ', '_')}_{YEAR}.tiff", dpi=300,
+            bbox_inches="tight", facecolor="white",
+            pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(out_cv, dpi=300, bbox_inches="tight", facecolor="white")
 plt.close(fig)
 print(f"  Saved: {out_cv.name}")
 
@@ -492,8 +495,8 @@ for col, res in oof_results.items():
     ci_hi  = res["ci_hi"]
 
     fig2, ax = plt.subplots(figsize=(6, 6))
-    fig2.patch.set_facecolor("#0a0a0a")
-    ax.set_facecolor("#111111")
+    fig2.patch.set_facecolor("white")
+    ax.set_facecolor("#f5f5f5")
 
     vmin_, vmax_ = np.percentile(y_true, 2), np.percentile(y_true, 98)
     sc = ax.scatter(y_true, y_pred, c=y_true,
@@ -510,20 +513,20 @@ for col, res in oof_results.items():
             zorder=4, label="OOF trend")
 
     cb = fig2.colorbar(sc, ax=ax, pad=0.02, shrink=0.85)
-    cb.set_label(label, color="white", fontsize=8)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=7)
-    cb.outline.set_edgecolor("#333")
+    cb.set_label(label, color="black", fontsize=8)
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=7)
+    cb.outline.set_edgecolor("lightgray")
 
-    ax.set_xlabel(f"Observed {label}", color="white", fontsize=10)
-    ax.set_ylabel(f"Predicted {label}  (OOF)", color="white", fontsize=10)
-    ax.tick_params(colors="white", labelsize=8)
+    ax.set_xlabel(f"Observed {label}", color="black", fontsize=10)
+    ax.set_ylabel(f"Predicted {label}  (OOF)", color="black", fontsize=10)
+    ax.tick_params(colors="black", labelsize=8)
     for spine in ax.spines.values():
-        spine.set_edgecolor("#333333")
-    ax.legend(facecolor="#1a1a1a", edgecolor="#444", labelcolor="white", fontsize=8)
+        spine.set_edgecolor("lightgray")
+    ax.legend(facecolor="lightyellow", edgecolor="lightgray", labelcolor="black", fontsize=8)
 
     ax.set_title(
         f"{label}  —  Spatial LOFO-CV OOF scatter",
-        color="white", fontsize=11, fontweight="bold", pad=8,
+        color="black", fontsize=11, fontweight="bold", pad=8,
     )
     txt = (
         f"ρ_cv = {rho_cv:+.3f}  [95% CI: {ci_lo:+.3f}, {ci_hi:+.3f}]\n"
@@ -531,8 +534,8 @@ for col, res in oof_results.items():
         f"n_oof = {res['n_oof']}  fields = {res['n_fields']}"
     )
     ax.text(0.03, 0.97, txt, transform=ax.transAxes,
-            ha="left", va="top", color="white", fontsize=8.5,
-            bbox=dict(boxstyle="round,pad=0.35", facecolor="#1a1a1a",
+            ha="left", va="top", color="black", fontsize=8.5,
+            bbox=dict(boxstyle="round,pad=0.35", facecolor="lightyellow",
                       edgecolor="#666", alpha=0.90))
 
     fig2.text(
@@ -544,7 +547,10 @@ for col, res in oof_results.items():
     fig2.tight_layout(pad=0.4, rect=[0, 0.03, 1, 1])
 
     out_sc = OUT_DIR / f"cv_scatter_{FARM.replace(' ', '_')}_{YEAR}_{col}.png"
-    fig2.savefig(out_sc, dpi=200, bbox_inches="tight", facecolor="#0a0a0a")
+    fig2.savefig(OUT_DIR / f"cv_scatter_{FARM.replace(' ', '_')}_{YEAR}_{col}.tiff",
+                 dpi=300, bbox_inches="tight", facecolor="white",
+                 pil_kwargs={"compression": "tiff_lzw"})
+    fig2.savefig(out_sc, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig2)
     print(f"  Saved: {out_sc.name}")
 

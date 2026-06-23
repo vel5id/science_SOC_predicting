@@ -116,8 +116,6 @@ article_draft.toc
 cols.txt
 run_all_output_verification.txt
 
-# ────── Exceptions: soil analysis data (for reproducibility) ──────
-!data/soil_analysis.xlsx
 
 # ────── Claude Code local settings ──────
 .claude/
@@ -139,3 +137,4 @@ gitpush.sh
 
 # ────── uv lock (optional — uncomment if you want to track it) ──────
 # uv.lock
+.superpowers/

@@ -528,8 +528,8 @@ def _draw_approx_label(ax, text="Approximate\n(model extrapolation)", fontsize=8
     lx = xmin + (xmax - xmin) * 0.03
     ly = ymin + (ymax - ymin) * 0.03
     ax.text(lx, ly, text, ha="left", va="bottom",
-            fontsize=fontsize, fontweight="bold", color="white",
-            bbox=dict(boxstyle="round,pad=0.3", facecolor="#111111",
+            fontsize=fontsize, fontweight="bold", color="black",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow",
                       edgecolor="#999999", linewidth=1.0, alpha=0.88),
             zorder=9)
 
@@ -558,7 +558,7 @@ def _render_panel(ax, col_in, col_out, title, subtitle="", r_val=None, basemap=T
     """Render one map panel on ax."""
     sub_in = pixels_df[["mx", "my", col_in]].dropna()
     if len(sub_in) == 0:
-        ax.set_title(f"{title}\n(no data)", color="white", fontsize=9)
+        ax.set_title(f"{title}\n(no data)", color="black", fontsize=9)
         return
 
     vals_in = sub_in[col_in]
@@ -600,13 +600,13 @@ panel_defs = [
      result_D, "spectral + GLCM\n+ topo + climate\n+ delta"),
 ]
 
-fig = plt.figure(figsize=(40, 11), facecolor="#0a0a0a")
+fig = plt.figure(figsize=(40, 11), facecolor="white")
 gs_main = gridspec.GridSpec(1, 4, figure=fig, left=0.02, right=0.98,
                             top=0.88, bottom=0.06, wspace=0.04)
 
 for panel_i, (in_col, out_col, title, model_result, feats_desc) in enumerate(panel_defs):
     ax = fig.add_subplot(gs_main[0, panel_i])
-    ax.set_facecolor("#111111")
+    ax.set_facecolor("#f5f5f5")
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
 
@@ -636,9 +636,9 @@ for panel_i, (in_col, out_col, title, model_result, feats_desc) in enumerate(pan
     sm = ScalarMappable(cmap=CMAP_P, norm=Normalize(VMIN_P, VMAX_P))
     sm.set_array([])
     cb = fig.colorbar(sm, ax=ax, shrink=0.68, pad=0.015, aspect=24)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=7)
-    cb.outline.set_edgecolor("#333333")
-    cb.set_label("P, mg/kg", color="white", fontsize=7, labelpad=5)
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=7)
+    cb.outline.set_edgecolor("lightgray")
+    cb.set_label("P, mg/kg", color="black", fontsize=7, labelpad=5)
 
     # rho annotation
     rho_str = ""
@@ -646,10 +646,10 @@ for panel_i, (in_col, out_col, title, model_result, feats_desc) in enumerate(pan
         _, r_val, n_tr = model_result
         rho_str = f"rho_train={r_val:+.3f}  n={n_tr}"
 
-    ax.set_title(title, fontsize=9, fontweight="bold", color="white", pad=5)
+    ax.set_title(title, fontsize=9, fontweight="bold", color="black", pad=5)
     ax.set_xticks([]); ax.set_yticks([])
     for spine in ax.spines.values():
-        spine.set_edgecolor("#222222")
+        spine.set_edgecolor("lightgray")
 
     # Feature label (bottom)
     ax.text(0.5, -0.01, feats_desc, transform=ax.transAxes,
@@ -659,8 +659,8 @@ for panel_i, (in_col, out_col, title, model_result, feats_desc) in enumerate(pan
     # rho box (top-right)
     if rho_str:
         ax.text(0.98, 0.98, rho_str, transform=ax.transAxes,
-                ha="right", va="top", color="white", fontsize=7.5,
-                bbox=dict(boxstyle="round,pad=0.3", facecolor="#1a1a1a",
+                ha="right", va="top", color="black", fontsize=7.5,
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow",
                           edgecolor="#555", alpha=0.92), zorder=10)
 
 fig.suptitle(
@@ -668,11 +668,14 @@ fig.suptitle(
     f"{total_px:,} real S2 pixels @ 10m  |  "
     f"[MODIFIED: enriched+delta features]  |  Ridge alpha={RIDGE_ALPHA}  |  "
     f"field-level trained, pixel-level applied",
-    fontsize=10, color="white", y=0.97,
+    fontsize=10, color="black", y=0.97,
 )
 
 out_compare = OUT_DIR / f"p_enriched_{farm_slug}_{YEAR}_comparison.png"
-fig.savefig(out_compare, dpi=160, bbox_inches="tight", facecolor="#0a0a0a")
+fig.savefig(OUT_DIR / f"p_enriched_{farm_slug}_{YEAR}_comparison.tiff", dpi=300,
+            bbox_inches="tight", facecolor="white",
+            pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(out_compare, dpi=300, bbox_inches="tight", facecolor="white")
 plt.close(fig)
 print(f"  Saved: {out_compare.name}")
 
@@ -680,8 +683,8 @@ print(f"  Saved: {out_compare.name}")
 print("\nRendering detailed P (FULL model) map ...")
 
 fig2, ax2 = plt.subplots(figsize=(12, 10))
-fig2.patch.set_facecolor("#0a0a0a")
-ax2.set_facecolor("#111111")
+fig2.patch.set_facecolor("white")
+ax2.set_facecolor("#f5f5f5")
 ax2.set_xlim(xmin, xmax)
 ax2.set_ylim(ymin, ymax)
 
@@ -706,9 +709,9 @@ _draw_field_borders(ax2, fontsize=6)
 sm2 = ScalarMappable(cmap=CMAP_P, norm=Normalize(VMIN_P, VMAX_P))
 sm2.set_array([])
 cb2 = fig2.colorbar(sm2, ax=ax2, shrink=0.72, pad=0.02, aspect=22)
-cb2.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=8)
-cb2.outline.set_edgecolor("#333333")
-cb2.set_label("P, mg/kg", color="white", fontsize=8, labelpad=6)
+cb2.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=8)
+cb2.outline.set_edgecolor("lightgray")
+cb2.set_label("P, mg/kg", color="black", fontsize=8, labelpad=6)
 
 rho_str_full = ""
 if result_D is not None:
@@ -717,15 +720,15 @@ if result_D is not None:
 
 ax2.set_title("P (phosphorus, mg/kg)  —  FULL enriched model\n"
               "spectral (GNDVI+BSI+NDRE+EVI+NDVI) + GLCM-autumn/summer + topo + climate + delta",
-              fontsize=11, fontweight="bold", color="white", pad=8)
+              fontsize=11, fontweight="bold", color="black", pad=8)
 ax2.set_xticks([]); ax2.set_yticks([])
 for spine in ax2.spines.values():
-    spine.set_edgecolor("#222222")
+    spine.set_edgecolor("lightgray")
 
 if rho_str_full:
     ax2.text(0.99, 0.99, rho_str_full, transform=ax2.transAxes,
-             ha="right", va="top", color="white", fontsize=9,
-             bbox=dict(boxstyle="round,pad=0.35", facecolor="#1a1a1a",
+             ha="right", va="top", color="black", fontsize=9,
+             bbox=dict(boxstyle="round,pad=0.35", facecolor="lightyellow",
                        edgecolor="#666", alpha=0.93), zorder=10)
 
 feat_summary = (
@@ -741,7 +744,10 @@ fig2.text(0.5, 0.01, f"{FARM}  |  {total_px:,} real S2 pixels @ 10m  |  {IMAGE_L
 fig2.tight_layout(pad=0.4, rect=[0, 0.05, 1, 1])
 
 out_detail = OUT_DIR / f"p_enriched_{farm_slug}_{YEAR}_full_detail.png"
-fig2.savefig(out_detail, dpi=200, bbox_inches="tight", facecolor="#0a0a0a")
+fig2.savefig(OUT_DIR / f"p_enriched_{farm_slug}_{YEAR}_full_detail.tiff", dpi=300,
+             bbox_inches="tight", facecolor="white",
+             pil_kwargs={"compression": "tiff_lzw"})
+fig2.savefig(out_detail, dpi=300, bbox_inches="tight", facecolor="white")
 plt.close(fig2)
 print(f"  Saved: {out_detail.name}")
 
@@ -758,13 +764,13 @@ top_pred_pairs = [
 ]
 
 fig3, axes3 = plt.subplots(2, 3, figsize=(16, 10))
-fig3.patch.set_facecolor("#0a0a0a")
+fig3.patch.set_facecolor("white")
 axes3 = axes3.ravel()
 
 # merge farm_train with needed cols
 for i, (feat_col, feat_label, rho_ref) in enumerate(top_pred_pairs):
     ax = axes3[i]
-    ax.set_facecolor("#111111")
+    ax.set_facecolor("#f5f5f5")
 
     src_df = farm_train[[feat_col, "p"]].dropna() if feat_col in farm_train.columns else pd.DataFrame()
     if len(src_df) < 5:
@@ -790,30 +796,33 @@ for i, (feat_col, feat_label, rho_ref) in enumerate(top_pred_pairs):
     xr = np.linspace(x_v.min(), x_v.max(), 100)
     ax.plot(xr, np.polyval(z, xr), color="#e05c4a", linewidth=1.8, zorder=4)
 
-    ax.set_xlabel(feat_label, color="white", fontsize=8)
-    ax.set_ylabel("P, mg/kg", color="white", fontsize=8)
-    ax.tick_params(colors="white", labelsize=7)
+    ax.set_xlabel(feat_label, color="black", fontsize=8)
+    ax.set_ylabel("P, mg/kg", color="black", fontsize=8)
+    ax.tick_params(colors="black", labelsize=7)
     for spine in ax.spines.values():
-        spine.set_edgecolor("#333333")
+        spine.set_edgecolor("lightgray")
 
     ax.text(0.05, 0.95, f"rho = {r_act:+.3f}\nn = {len(src_df)}",
-            transform=ax.transAxes, ha="left", va="top", color="white",
+            transform=ax.transAxes, ha="left", va="top", color="black",
             fontsize=9, fontweight="bold",
-            bbox=dict(boxstyle="round,pad=0.3", facecolor="#1a1a1a",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow",
                       edgecolor="#555", alpha=0.9))
 
     cb3 = fig3.colorbar(sc, ax=ax, pad=0.02, shrink=0.80)
-    cb3.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=6)
-    cb3.outline.set_edgecolor("#333")
+    cb3.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=6)
+    cb3.outline.set_edgecolor("lightgray")
 
 fig3.suptitle(
     f"Top predictors for P (phosphorus)  |  {FARM} all years  |  Spearman rho  "
     f"[MODIFIED: enriched+delta features]",
-    color="white", fontsize=11, fontweight="bold", y=1.01,
+    color="black", fontsize=11, fontweight="bold", y=1.01,
 )
 fig3.tight_layout(pad=0.6)
 out_scatter = OUT_DIR / f"p_enriched_{farm_slug}_top_predictors.png"
-fig3.savefig(out_scatter, dpi=180, bbox_inches="tight", facecolor="#0a0a0a")
+fig3.savefig(OUT_DIR / f"p_enriched_{farm_slug}_top_predictors.tiff", dpi=300,
+             bbox_inches="tight", facecolor="white",
+             pil_kwargs={"compression": "tiff_lzw"})
+fig3.savefig(out_scatter, dpi=300, bbox_inches="tight", facecolor="white")
 plt.close(fig3)
 print(f"  Saved: {out_scatter.name}")
 

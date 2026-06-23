@@ -28,7 +28,7 @@ import geopandas as gpd
 import rasterio
 from rasterio.features import geometry_mask
 import matplotlib
-matplotlib.use("TkAgg")
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib.colors import Normalize
@@ -464,8 +464,8 @@ for tgt in TARGETS:
     colors  = ["#e05c4a" if r < 0 else "#4ab5e0" for r in rhos]
 
     fig_r, ax_r = plt.subplots(figsize=(10, 8))
-    fig_r.patch.set_facecolor("#0d0d0d")
-    ax_r.set_facecolor("#111111")
+    fig_r.patch.set_facecolor("white")
+    ax_r.set_facecolor("#f5f5f5")
 
     # Horizontal bars — best at TOP (invert y-axis display)
     y_pos = np.arange(TOP_N)
@@ -481,19 +481,19 @@ for tgt in TARGETS:
         ax_r.text(
             bar.get_width() + 0.005, bar.get_y() + bar.get_height() / 2,
             sign_str,
-            va="center", ha="left", color="white", fontsize=7.5,
+            va="center", ha="left", color="black", fontsize=7.5,
         )
 
     # Feature names on y-axis
     ax_r.set_yticks(y_pos)
-    ax_r.set_yticklabels(feats, fontsize=7.5, color="white")
+    ax_r.set_yticklabels(feats, fontsize=7.5, color="black")
     ax_r.invert_yaxis()   # rank #1 at top
 
-    ax_r.set_xlabel("|Spearman rho|", color="white", fontsize=9)
-    ax_r.tick_params(axis="x", colors="white", labelsize=8)
-    ax_r.tick_params(axis="y", colors="white")
+    ax_r.set_xlabel("|Spearman rho|", color="black", fontsize=9)
+    ax_r.tick_params(axis="x", colors="black", labelsize=8)
+    ax_r.tick_params(axis="y", colors="black")
     for spine in ax_r.spines.values():
-        spine.set_edgecolor("#333333")
+        spine.set_edgecolor("lightgray")
     ax_r.set_xlim(0, max(abs_rho) + 0.12)
     ax_r.axvline(0.3, color="#555", linewidth=0.8, linestyle=":")
     ax_r.axvline(0.5, color="#888", linewidth=0.8, linestyle=":")
@@ -506,18 +506,20 @@ for tgt in TARGETS:
         Patch(facecolor="#4ab5e0", label="direct  (rho > 0)"),
     ]
     ax_r.legend(handles=legend_elem, loc="lower right",
-                facecolor="#1a1a1a", edgecolor="#444", labelcolor="white",
+                facecolor="lightyellow", edgecolor="lightgray", labelcolor="black",
                 fontsize=8)
 
     ax_r.set_title(
         f"Feature ranking for  {label}  |  top-{TOP_N} predictors  "
         f"(Spearman rho, n>={MIN_N}, all farms)\n"
         f"Best predictor: {feats[0]}  rho={rhos[0]:+.3f}",
-        color="white", fontsize=9, fontweight="bold", pad=8,
+        color="black", fontsize=9, fontweight="bold", pad=8,
     )
     fig_r.tight_layout(pad=0.6)
     out_rank = OUT_DIR / f"ranking_{tgt}.png"
-    fig_r.savefig(out_rank, dpi=150, bbox_inches="tight", facecolor="#0d0d0d")
+    fig_r.savefig(OUT_DIR / f"ranking_{tgt}.tiff", dpi=300, bbox_inches="tight",
+                  facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+    fig_r.savefig(out_rank, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig_r)
     print(f"  Saved: {out_rank.name}")
 
@@ -544,8 +546,8 @@ for tgt in TARGETS:
     vmax = np.percentile(valid_in, 98)
 
     fig_h, ax_h = plt.subplots(figsize=(11, 10))
-    fig_h.patch.set_facecolor("#0a0a0a")
-    ax_h.set_facecolor("#111111")
+    fig_h.patch.set_facecolor("white")
+    ax_h.set_facecolor("#f5f5f5")
     ax_h.set_xlim(xmin, xmax)
     ax_h.set_ylim(ymin, ymax)
 
@@ -564,8 +566,8 @@ for tgt in TARGETS:
             xmin + (xmax - xmin) * 0.03,
             ymin + (ymax - ymin) * 0.03,
             "Approximate\n(model extrapolation)",
-            ha="left", va="bottom", fontsize=8, fontweight="bold", color="white",
-            bbox=dict(boxstyle="round,pad=0.3", facecolor="#111",
+            ha="left", va="bottom", fontsize=8, fontweight="bold", color="black",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow",
                       edgecolor="#999", linewidth=1.0, alpha=0.88),
             zorder=9,
         )
@@ -583,9 +585,9 @@ for tgt in TARGETS:
     sm = ScalarMappable(cmap=cmap, norm=Normalize(vmin, vmax))
     sm.set_array([])
     cb = fig_h.colorbar(sm, ax=ax_h, shrink=0.72, pad=0.02, aspect=22)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=8)
-    cb.outline.set_edgecolor("#333")
-    cb.set_label(label, color="white", fontsize=8, labelpad=6)
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=8)
+    cb.outline.set_edgecolor("lightgray")
+    cb.set_label(label, color="black", fontsize=8, labelpad=6)
 
     # Info box
     info_txt = (
@@ -597,8 +599,8 @@ for tgt in TARGETS:
     ax_h.text(
         0.99, 0.99, info_txt,
         transform=ax_h.transAxes, ha="right", va="top",
-        color="white", fontsize=7.5,
-        bbox=dict(boxstyle="round,pad=0.35", facecolor="#1a1a1a",
+        color="black", fontsize=7.5,
+        bbox=dict(boxstyle="round,pad=0.35", facecolor="lightyellow",
                   edgecolor="#666", alpha=0.94),
         zorder=10,
     )
@@ -606,11 +608,11 @@ for tgt in TARGETS:
     ax_h.set_title(
         f"{label}  —  best-predictor heatmap\n"
         f"Predictor: {best_feat}  (rho={best_rho:+.3f})",
-        fontsize=11, fontweight="bold", color="white", pad=8,
+        fontsize=11, fontweight="bold", color="black", pad=8,
     )
     ax_h.set_xticks([]); ax_h.set_yticks([])
     for spine in ax_h.spines.values():
-        spine.set_edgecolor("#222")
+        spine.set_edgecolor("lightgray")
 
     fig_h.text(
         0.5, 0.005,
@@ -621,7 +623,9 @@ for tgt in TARGETS:
     fig_h.tight_layout(pad=0.4, rect=[0, 0.02, 1, 1])
 
     out_h = OUT_DIR / f"heatmap_best_{tgt}.png"
-    fig_h.savefig(out_h, dpi=180, bbox_inches="tight", facecolor="#0a0a0a")
+    fig_h.savefig(OUT_DIR / f"heatmap_best_{tgt}.tiff", dpi=300, bbox_inches="tight",
+                  facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+    fig_h.savefig(out_h, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig_h)
     print(f"  Saved: {out_h.name}")
 
@@ -630,7 +634,7 @@ for tgt in TARGETS:
 print("\nRendering summary ranking figure (all elements) ...")
 
 n_tgt = len(TARGETS)
-fig_s = plt.figure(figsize=(36, 28), facecolor="#0d0d0d")
+fig_s = plt.figure(figsize=(36, 28), facecolor="white")
 gs = gridspec.GridSpec(
     2, 3, figure=fig_s,
     left=0.04, right=0.97, top=0.93, bottom=0.04,
@@ -640,7 +644,7 @@ gs = gridspec.GridSpec(
 for ti, tgt in enumerate(TARGETS):
     row, col_i = divmod(ti, 3)
     ax = fig_s.add_subplot(gs[row, col_i])
-    ax.set_facecolor("#111111")
+    ax.set_facecolor("#f5f5f5")
 
     label = CHEM_LABELS[tgt]
     ranked = rankings[tgt]
@@ -657,17 +661,17 @@ for ti, tgt in enumerate(TARGETS):
     # rho labels
     for i, (r_v, a_r) in enumerate(zip(rhos, abs_rho)):
         ax.text(a_r + 0.004, i, f"{r_v:+.3f}",
-                va="center", ha="left", color="white", fontsize=6.5)
+                va="center", ha="left", color="black", fontsize=6.5)
 
     ax.set_yticks(y_pos)
-    ax.set_yticklabels(feats, fontsize=6.5, color="white")
+    ax.set_yticklabels(feats, fontsize=6.5, color="black")
     ax.invert_yaxis()
 
-    ax.set_xlabel("|Spearman rho|", color="white", fontsize=7.5)
-    ax.tick_params(axis="x", colors="white", labelsize=7)
-    ax.tick_params(axis="y", colors="white")
+    ax.set_xlabel("|Spearman rho|", color="black", fontsize=7.5)
+    ax.tick_params(axis="x", colors="black", labelsize=7)
+    ax.tick_params(axis="y", colors="black")
     for spine in ax.spines.values():
-        spine.set_edgecolor("#333")
+        spine.set_edgecolor("lightgray")
     ax.set_xlim(0, max(abs_rho) + 0.13)
     ax.axvline(0.3, color="#555", lw=0.7, ls=":")
     ax.axvline(0.5, color="#888", lw=0.7, ls=":")
@@ -690,11 +694,13 @@ fig_s.suptitle(
     f"Spearman |rho|, all farms+years, top-{TOP_N} predictors\n"
     f"Gold = best predictor  |  Red = inverse corr  |  Blue = direct corr  |  "
     f"Vertical lines: 0.3 / 0.5 / 0.7",
-    color="white", fontsize=11, fontweight="bold", y=0.975,
+    color="black", fontsize=11, fontweight="bold", y=0.975,
 )
 
 out_sum = OUT_DIR / "ranking_all_summary.png"
-fig_s.savefig(out_sum, dpi=130, bbox_inches="tight", facecolor="#0d0d0d")
+fig_s.savefig(OUT_DIR / "ranking_all_summary.tiff", dpi=300, bbox_inches="tight",
+              facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+fig_s.savefig(out_sum, dpi=300, bbox_inches="tight", facecolor="white")
 plt.close(fig_s)
 print(f"  Saved: {out_sum.name}")
 

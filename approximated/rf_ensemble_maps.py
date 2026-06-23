@@ -227,7 +227,7 @@ def _draw_approx_label(ax, fontsize=9):
     ax.text(xmin+(xmax-xmin)*0.03, ymin+(ymax-ymin)*0.03,
             "Approximate\n(model extrapolation)",
             ha="left", va="bottom", fontsize=fontsize, fontweight="bold",
-            color="white", bbox=dict(boxstyle="round,pad=0.3", facecolor="#111",
+            color="black", bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow",
             edgecolor="#999", lw=1.0, alpha=0.88), zorder=9)
 
 _gx = np.linspace(xmin, xmax, GRID_N)
@@ -441,7 +441,7 @@ for tgt in TARGETS:
 print("\n\nRendering maps ...")
 
 def render_single(ax, vals_in, vals_out, cmap_, v0, v1, title, footer=""):
-    ax.set_facecolor("#111111")
+    ax.set_facecolor("#f5f5f5")
     ax.set_xlim(xmin, xmax); ax.set_ylim(ymin, ymax)
     cx.add_basemap(ax, source=cx.providers.Esri.WorldImagery, zoom=TILE_ZOOM, alpha=1.0)
     # Outside smooth
@@ -457,11 +457,11 @@ def render_single(ax, vals_in, vals_out, cmap_, v0, v1, title, footer=""):
     _draw_polygons(ax, fontsize=4.5)
     sm = ScalarMappable(cmap=cmap_, norm=Normalize(v0,v1)); sm.set_array([])
     cb = plt.colorbar(sm, ax=ax, shrink=0.70, pad=0.02, aspect=22)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=6)
-    cb.outline.set_edgecolor("#333333")
-    ax.set_title(title, fontsize=8, fontweight="bold", color="white", pad=4)
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=6)
+    cb.outline.set_edgecolor("lightgray")
+    ax.set_title(title, fontsize=8, fontweight="bold", color="black", pad=4)
     ax.set_xticks([]); ax.set_yticks([])
-    for sp in ax.spines.values(): sp.set_edgecolor("#222222")
+    for sp in ax.spines.values(): sp.set_edgecolor("lightgray")
 
 # Per-element: 1×4 comparison (Ridge | RF | Stack | Kriging)
 for tgt in TARGETS:
@@ -473,7 +473,7 @@ for tgt in TARGETS:
     v0, v1 = np.nanpercentile(all_vals, 2), np.nanpercentile(all_vals, 98)
 
     fig, axes = plt.subplots(1, 4, figsize=(36, 9))
-    fig.patch.set_facecolor("#0a0a0a")
+    fig.patch.set_facecolor("white")
 
     panels = [
         (r["ridge_px"], r["ridge_out"],
@@ -491,21 +491,24 @@ for tgt in TARGETS:
 
     fig.suptitle(
         f"{label}  |  {FARM} {YEAR}  |  {len(pixels_df):,} pixels @ 10m",
-        color="white", fontsize=11, fontweight="bold", y=1.01)
+        color="black", fontsize=11, fontweight="bold", y=1.01)
     fig.tight_layout(pad=0.5)
+    fig.savefig(OUT_DIR / f"ensemble_{farm_slug}_{YEAR}_{tgt}.tiff",
+                dpi=300, bbox_inches="tight", facecolor="white",
+                pil_kwargs={"compression": "tiff_lzw"})
     fig.savefig(OUT_DIR / f"ensemble_{farm_slug}_{YEAR}_{tgt}.png",
-                dpi=200, bbox_inches="tight", facecolor="#0a0a0a")
+                dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  Saved: ensemble_{farm_slug}_{YEAR}_{tgt}.png")
 
 # Summary 1×7 (NDVI + 6 krig)
 print("\nRendering summary figure (1×7 Kriging) ...")
 fig, axes = plt.subplots(1, 7, figsize=(42, 7))
-fig.patch.set_facecolor("#0a0a0a")
+fig.patch.set_facecolor("white")
 
 # NDVI panel
 ax = axes[0]
-ax.set_facecolor("#111111")
+ax.set_facecolor("#f5f5f5")
 ax.set_xlim(xmin,xmax); ax.set_ylim(ymin,ymax)
 cx.add_basemap(ax, source=cx.providers.Esri.WorldImagery, zoom=TILE_ZOOM, alpha=1.0)
 sub_ndvi = pixels_df[["mx","my","ndvi"]].dropna()
@@ -515,11 +518,11 @@ ax.scatter(sub_ndvi["mx"], sub_ndvi["my"], c=sub_ndvi["ndvi"], cmap="RdYlGn",
 _draw_polygons(ax, fontsize=4.5)
 sm = ScalarMappable(cmap="RdYlGn", norm=Normalize(v0n,v1n)); sm.set_array([])
 cb = plt.colorbar(sm, ax=ax, shrink=0.70, pad=0.02, aspect=22)
-cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=6)
-cb.outline.set_edgecolor("#333333")
-ax.set_title("NDVI (real S2)", fontsize=7.5, fontweight="bold", color="white", pad=4)
+cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=6)
+cb.outline.set_edgecolor("lightgray")
+ax.set_title("NDVI (real S2)", fontsize=7.5, fontweight="bold", color="black", pad=4)
 ax.set_xticks([]); ax.set_yticks([])
-for sp in ax.spines.values(): sp.set_edgecolor("#222222")
+for sp in ax.spines.values(): sp.set_edgecolor("lightgray")
 
 # Chemistry panels (Kriging)
 for i, tgt in enumerate(TARGETS):
@@ -535,10 +538,13 @@ for i, tgt in enumerate(TARGETS):
 fig.suptitle(
     f"RF + Kriging Residuals  |  {FARM}, {YEAR}  |  "
     f"{len(pixels_df):,} S2 pixels @ 10m",
-    fontsize=10, color="white", y=1.008)
+    fontsize=10, color="black", y=1.008)
 fig.tight_layout(pad=0.5)
+fig.savefig(OUT_DIR / f"ensemble_{farm_slug}_{YEAR}_summary_krig.tiff",
+            dpi=300, bbox_inches="tight", facecolor="white",
+            pil_kwargs={"compression": "tiff_lzw"})
 fig.savefig(OUT_DIR / f"ensemble_{farm_slug}_{YEAR}_summary_krig.png",
-            dpi=150, bbox_inches="tight", facecolor="#0a0a0a")
+            dpi=300, bbox_inches="tight", facecolor="white")
 plt.close(fig)
 print(f"  Saved: ensemble_{farm_slug}_{YEAR}_summary_krig.png")
 

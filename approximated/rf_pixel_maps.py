@@ -285,10 +285,10 @@ def get_scatter_coords(px_df, pred_df, key):
 # ─── 8. Main comparison figure: 2 rows × 6 cols ───────────────────────────────
 print("\nRendering comparison figure (2×6) ...")
 
-DARK_BG  = "#1a1a2e"
-PANEL_BG = "#16213e"
-TEXT_CLR = "#e0e0e0"
-ACC_CLR  = "#e94560"
+DARK_BG  = "white"
+PANEL_BG = "#f5f5f5"
+TEXT_CLR = "black"
+ACC_CLR  = "#c0392b"
 
 POINT_SIZE = 0.4
 ALPHA_SCATTER = 0.6
@@ -334,7 +334,7 @@ for col_idx, tgt in enumerate(TARGETS):
         ax.tick_params(left=False, bottom=False,
                        labelleft=False, labelbottom=False)
         for spine in ax.spines.values():
-            spine.set_color("#555555")
+            spine.set_color("lightgray")
 
         # Column header (top row only)
         if row_idx == 0:
@@ -353,7 +353,9 @@ fig.suptitle(
 )
 
 out_path = OUT_PLOTS / "rf_pixel_maps_comparison.png"
-fig.savefig(out_path, dpi=150, bbox_inches="tight",
+fig.savefig(OUT_PLOTS / "rf_pixel_maps_comparison.tiff", dpi=300, bbox_inches="tight",
+            facecolor=DARK_BG, pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(out_path, dpi=300, bbox_inches="tight",
             facecolor=DARK_BG, edgecolor="none")
 plt.close(fig)
 print(f"  Saved: {out_path.name}")
@@ -399,7 +401,9 @@ fig.suptitle(
 )
 
 out_path = OUT_PLOTS / "rf_vs_ridge_diff.png"
-fig.savefig(out_path, dpi=150, bbox_inches="tight",
+fig.savefig(OUT_PLOTS / "rf_vs_ridge_diff.tiff", dpi=300, bbox_inches="tight",
+            facecolor=DARK_BG, pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(out_path, dpi=300, bbox_inches="tight",
             facecolor=DARK_BG, edgecolor="none")
 plt.close(fig)
 print(f"  Saved: {out_path.name}")
@@ -445,7 +449,7 @@ for tgt in TARGETS:
         ax.tick_params(left=False, bottom=False,
                        labelleft=False, labelbottom=False)
         for spine in ax.spines.values():
-            spine.set_color("#555555")
+            spine.set_color("lightgray")
         ax.set_title(ttl, color=TEXT_CLR, fontsize=10,
                      fontweight="bold", pad=7)
 
@@ -464,7 +468,7 @@ for tgt in TARGETS:
     # 1:1 line
     lims = [min(ax.get_xlim()[0], ax.get_ylim()[0]),
             max(ax.get_xlim()[1], ax.get_ylim()[1])]
-    ax.plot(lims, lims, "w--", lw=1.0, alpha=0.6)
+    ax.plot(lims, lims, "k--", lw=1.0, alpha=0.6)
     ax.set_xlabel(f"Ridge  ({label})", color=TEXT_CLR, fontsize=8)
     ax.set_ylabel(f"RF  ({label})", color=TEXT_CLR, fontsize=8)
     ax.set_title(f"RF vs Ridge (pixel)\nρ = {rho:.3f}",
@@ -479,7 +483,9 @@ for tgt in TARGETS:
     )
 
     out_path = OUT_PLOTS / f"rf_pixel_detail_{tgt}.png"
-    fig.savefig(out_path, dpi=150, bbox_inches="tight",
+    fig.savefig(OUT_PLOTS / f"rf_pixel_detail_{tgt}.tiff", dpi=300, bbox_inches="tight",
+                facecolor=DARK_BG, pil_kwargs={"compression": "tiff_lzw"})
+    fig.savefig(out_path, dpi=300, bbox_inches="tight",
                 facecolor=DARK_BG, edgecolor="none")
     plt.close(fig)
     print(f"  Saved: {out_path.name}")

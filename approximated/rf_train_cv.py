@@ -33,7 +33,7 @@ warnings.filterwarnings("ignore")
 import numpy as np
 import pandas as pd
 import matplotlib
-matplotlib.use("TkAgg")
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from pathlib import Path
@@ -433,7 +433,7 @@ print(f"  Saved: rf_report.txt")
 # ─── 6. Visualisation: CV summary figure ─────────────────────────
 print("\nRendering rf_cv_summary.png ...")
 
-fig = plt.figure(figsize=(22, 16), facecolor="#0a0a0a")
+fig = plt.figure(figsize=(22, 16), facecolor="white")
 gs = gridspec.GridSpec(
     2, len(TARGETS), figure=fig,
     left=0.06, right=0.97, top=0.90, bottom=0.06,
@@ -442,7 +442,7 @@ gs = gridspec.GridSpec(
 
 # Row 0: ρ_train vs ρ_cv bar chart
 ax_bar = fig.add_subplot(gs[0, :])
-ax_bar.set_facecolor("#111111")
+ax_bar.set_facecolor("white")
 
 x  = np.arange(len(TARGETS))
 w  = 0.32
@@ -454,10 +454,10 @@ colors     = [CHEM_CMAPS[t] for t in TARGETS]
 
 bars_tr = ax_bar.bar(x - w/2, [abs(r) for r in rho_trains],
                      width=w, color=colors, alpha=0.50,
-                     edgecolor="#444", linewidth=0.6, label="ρ_train (in-sample)")
+                     edgecolor="lightgray", linewidth=0.6, label="ρ_train (in-sample)")
 bars_cv = ax_bar.bar(x + w/2, [abs(r) for r in rho_cvs],
                      width=w, color=colors, alpha=0.95,
-                     edgecolor="white", linewidth=0.7, label="ρ_cv (LOFO-CV)")
+                     edgecolor="black", linewidth=0.7, label="ρ_cv (LOFO-CV)")
 
 # CI error bars on ρ_cv
 for i, t in enumerate(TARGETS):
@@ -469,35 +469,35 @@ for i, t in enumerate(TARGETS):
     hi_err = max(0, hi_err)
     ax_bar.errorbar(x[i] + w/2, abs(m["rho_cv"]),
                     yerr=[[lo_err], [hi_err]],
-                    fmt="none", color="white", capsize=4, linewidth=1.2)
+                    fmt="none", color="black", capsize=4, linewidth=1.2)
 
 for i, (t, bar) in enumerate(zip(TARGETS, bars_cv)):
     m = all_metrics[t]
     ax_bar.text(bar.get_x() + bar.get_width()/2,
                 bar.get_height() + 0.015,
                 f"{m['rho_cv']:+.3f}",
-                ha="center", va="bottom", color="white", fontsize=8, fontweight="bold")
+                ha="center", va="bottom", color="black", fontsize=8, fontweight="bold")
 
 ax_bar.set_xticks(x)
-ax_bar.set_xticklabels([CHEM_LABELS[t] for t in TARGETS], color="white", fontsize=9)
-ax_bar.set_ylabel("|Spearman ρ|", color="white", fontsize=9)
+ax_bar.set_xticklabels([CHEM_LABELS[t] for t in TARGETS], color="black", fontsize=9)
+ax_bar.set_ylabel("|Spearman ρ|", color="black", fontsize=9)
 ax_bar.set_ylim(0, 1.05)
 ax_bar.axhline(0.5, color="#555", lw=0.8, ls=":")
 ax_bar.axhline(0.7, color="#888", lw=0.8, ls=":")
-ax_bar.tick_params(colors="white")
+ax_bar.tick_params(colors="black")
 for sp in ax_bar.spines.values():
-    sp.set_edgecolor("#333")
-ax_bar.legend(facecolor="#1a1a1a", edgecolor="#555",
-              labelcolor="white", fontsize=9, loc="upper right")
+    sp.set_edgecolor("lightgray")
+ax_bar.legend(facecolor="white", edgecolor="gray",
+              labelcolor="black", fontsize=9, loc="upper right")
 ax_bar.set_title(
     "Random Forest LOFO-CV  |  ρ_train vs ρ_cv (|Spearman|)  |  error bars = 95% bootstrap CI",
-    color="white", fontsize=10, fontweight="bold", pad=8,
+    color="black", fontsize=10, fontweight="bold", pad=8,
 )
 
 # Row 1: OOF scatter per element
 for ti, tgt in enumerate(TARGETS):
     ax = fig.add_subplot(gs[1, ti])
-    ax.set_facecolor("#111111")
+    ax.set_facecolor("white")
 
     sub = oof_df[oof_df["element"] == tgt]
     if len(sub) == 0:
@@ -515,26 +515,28 @@ for ti, tgt in enumerate(TARGETS):
     ax.text(0.05, 0.95,
             f"ρ_cv={m['rho_cv']:+.3f}\nn={m['n_oof']}",
             transform=ax.transAxes, ha="left", va="top",
-            color="white", fontsize=8, fontweight="bold",
-            bbox=dict(boxstyle="round,pad=0.25", facecolor="#1a1a1a",
-                      edgecolor="#555", alpha=0.92))
+            color="black", fontsize=8, fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.25", facecolor="lightyellow",
+                      edgecolor="lightgray", alpha=0.92))
 
-    ax.set_xlabel(f"True {CHEM_LABELS[tgt]}", color="white", fontsize=7.5)
-    ax.set_ylabel(f"Predicted", color="white", fontsize=7.5)
+    ax.set_xlabel(f"True {CHEM_LABELS[tgt]}", color="black", fontsize=7.5)
+    ax.set_ylabel(f"Predicted", color="black", fontsize=7.5)
     ax.set_title(CHEM_LABELS[tgt], color=CHEM_CMAPS[tgt],
                  fontsize=8, fontweight="bold")
-    ax.tick_params(colors="white", labelsize=7)
+    ax.tick_params(colors="black", labelsize=7)
     for sp in ax.spines.values():
-        sp.set_edgecolor("#333")
+        sp.set_edgecolor("lightgray")
 
 fig.suptitle(
     "Random Forest  |  LOFO-CV (Leave-One-Field-Out)  |  n_estimators=500  |  "
     "sigma-filtered (±3σ)  |  log1p: P, S, NO3",
-    color="white", fontsize=11, fontweight="bold", y=0.96,
+    color="black", fontsize=11, fontweight="bold", y=0.96,
 )
 
 out_sum = OUT_DIR / "rf_cv_summary.png"
-fig.savefig(out_sum, dpi=150, bbox_inches="tight", facecolor="#0a0a0a")
+fig.savefig(OUT_DIR / "rf_cv_summary.tiff", dpi=300, bbox_inches="tight",
+            facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(out_sum, dpi=300, bbox_inches="tight", facecolor="white")
 plt.close(fig)
 print(f"  Saved: {out_sum.name}")
 
@@ -547,8 +549,8 @@ for tgt in TARGETS:
     m = all_metrics[tgt]
 
     fig_s, ax_s = plt.subplots(figsize=(7, 6))
-    fig_s.patch.set_facecolor("#0a0a0a")
-    ax_s.set_facecolor("#111111")
+    fig_s.patch.set_facecolor("white")
+    ax_s.set_facecolor("white")
 
     sc = ax_s.scatter(sub["y_true"], sub["y_pred"],
                       c=sub["y_true"], cmap="viridis",
@@ -558,15 +560,15 @@ for tgt in TARGETS:
     ax_s.plot([lo, hi], [lo, hi], color="#e05c4a", lw=1.5, ls="--", zorder=2)
 
     cb = fig_s.colorbar(sc, ax=ax_s, shrink=0.8, pad=0.02)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=7)
-    cb.outline.set_edgecolor("#333")
-    cb.set_label(CHEM_LABELS[tgt], color="white", fontsize=8)
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=7)
+    cb.outline.set_edgecolor("lightgray")
+    cb.set_label(CHEM_LABELS[tgt], color="black", fontsize=8)
 
-    ax_s.set_xlabel(f"True {CHEM_LABELS[tgt]}", color="white", fontsize=9)
-    ax_s.set_ylabel("Predicted (RF, LOFO-CV)", color="white", fontsize=9)
-    ax_s.tick_params(colors="white", labelsize=8)
+    ax_s.set_xlabel(f"True {CHEM_LABELS[tgt]}", color="black", fontsize=9)
+    ax_s.set_ylabel("Predicted (RF, LOFO-CV)", color="black", fontsize=9)
+    ax_s.tick_params(colors="black", labelsize=8)
     for sp in ax_s.spines.values():
-        sp.set_edgecolor("#333")
+        sp.set_edgecolor("lightgray")
 
     ci_str = f"[{m['ci_lo']:+.3f}, {m['ci_hi']:+.3f}]"
     ax_s.text(0.04, 0.97,
@@ -574,17 +576,19 @@ for tgt in TARGETS:
               f"RMSE = {m['rmse_cv']:.3f}   R² = {m['r2_cv']:.3f}\n"
               f"n = {m['n_oof']}   n_features = {m['n_features']}",
               transform=ax_s.transAxes, ha="left", va="top",
-              color="white", fontsize=8,
-              bbox=dict(boxstyle="round,pad=0.3", facecolor="#1a1a1a",
-                        edgecolor="#666", alpha=0.93))
+              color="black", fontsize=8,
+              bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow",
+                        edgecolor="lightgray", alpha=0.93))
 
     ax_s.set_title(
         f"{CHEM_LABELS[tgt]}  —  RF LOFO-CV OOF scatter",
-        color="white", fontsize=10, fontweight="bold",
+        color="black", fontsize=10, fontweight="bold",
     )
     fig_s.tight_layout(pad=0.5)
     out_sc = OUT_DIR / f"rf_scatter_{tgt}.png"
-    fig_s.savefig(out_sc, dpi=160, bbox_inches="tight", facecolor="#0a0a0a")
+    fig_s.savefig(OUT_DIR / f"rf_scatter_{tgt}.tiff", dpi=300, bbox_inches="tight",
+                  facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+    fig_s.savefig(out_sc, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig_s)
     print(f"  Saved: {out_sc.name}")
 
@@ -600,29 +604,31 @@ for tgt in TARGETS:
     fdf = pd.read_csv(feat_csv).head(20)
 
     fig_f, ax_f = plt.subplots(figsize=(10, 7))
-    fig_f.patch.set_facecolor("#0a0a0a")
-    ax_f.set_facecolor("#111111")
+    fig_f.patch.set_facecolor("white")
+    ax_f.set_facecolor("white")
 
     y_pos = np.arange(len(fdf))
     ax_f.barh(y_pos, fdf["perm_importance"],
-              color=CHEM_CMAPS[tgt], alpha=0.85, edgecolor="#222", linewidth=0.4)
+              color=CHEM_CMAPS[tgt], alpha=0.85, edgecolor="lightgray", linewidth=0.4)
     ax_f.set_yticks(y_pos)
-    ax_f.set_yticklabels(fdf["feature"], fontsize=7, color="white")
+    ax_f.set_yticklabels(fdf["feature"], fontsize=7, color="black")
     ax_f.invert_yaxis()
-    ax_f.set_xlabel("Permutation importance (mean decrease in score)", color="white", fontsize=8)
-    ax_f.tick_params(axis="x", colors="white", labelsize=8)
+    ax_f.set_xlabel("Permutation importance (mean decrease in score)", color="black", fontsize=8)
+    ax_f.tick_params(axis="x", colors="black", labelsize=8)
     for sp in ax_f.spines.values():
-        sp.set_edgecolor("#333")
+        sp.set_edgecolor("lightgray")
 
     m = all_metrics[tgt]
     ax_f.set_title(
         f"Feature importance: {CHEM_LABELS[tgt]}  |  "
         f"top-20 of {m['n_features']} selected  |  ρ_cv={m['rho_cv']:+.3f}",
-        color="white", fontsize=9, fontweight="bold",
+        color="black", fontsize=9, fontweight="bold",
     )
     fig_f.tight_layout(pad=0.5)
     out_fi = OUT_DIR / f"rf_importance_{tgt}.png"
-    fig_f.savefig(out_fi, dpi=150, bbox_inches="tight", facecolor="#0a0a0a")
+    fig_f.savefig(OUT_DIR / f"rf_importance_{tgt}.tiff", dpi=300, bbox_inches="tight",
+                  facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+    fig_f.savefig(out_fi, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig_f)
     print(f"  Saved: {out_fi.name}")
 

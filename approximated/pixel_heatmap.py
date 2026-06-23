@@ -264,8 +264,8 @@ def save_single(col, label, cmap, data_col, vmin_override=None, vmax_override=No
         return
 
     fig, ax = plt.subplots(figsize=(10, 9))
-    fig.patch.set_facecolor("#0a0a0a")
-    ax.set_facecolor("#111111")
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor("#f5f5f5")
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
 
@@ -295,17 +295,17 @@ def save_single(col, label, cmap, data_col, vmin_override=None, vmax_override=No
     sm = ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
     cb = fig.colorbar(sm, ax=ax, shrink=0.7, pad=0.02, aspect=20)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=8)
-    cb.outline.set_edgecolor("#333333")
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=8)
+    cb.outline.set_edgecolor("lightgray")
 
     ax.set_title(
         f"{label}{title_suffix}",
-        fontsize=11, fontweight="bold", color="white", pad=7,
+        fontsize=11, fontweight="bold", color="black", pad=7,
     )
     ax.set_xticks([])
     ax.set_yticks([])
     for spine in ax.spines.values():
-        spine.set_edgecolor("#222222")
+        spine.set_edgecolor("lightgray")
 
     fig.suptitle(
         f"{FARM}, {YEAR}  |  {total_px:,} пикселей 10м  |  Esri WorldImagery",
@@ -314,7 +314,10 @@ def save_single(col, label, cmap, data_col, vmin_override=None, vmax_override=No
     fig.tight_layout(pad=0.4)
 
     out = OUT_DIR / f"pixel_{farm_slug}_{YEAR}_{col}{fname_suffix}.png"
-    fig.savefig(out, dpi=200, bbox_inches="tight", facecolor="#0a0a0a")
+    fig.savefig(OUT_DIR / f"pixel_{farm_slug}_{YEAR}_{col}{fname_suffix}.tiff", dpi=300,
+                bbox_inches="tight", facecolor="white",
+                pil_kwargs={"compression": "tiff_lzw"})
+    fig.savefig(out, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  Saved: {out.name}")
 
@@ -327,8 +330,8 @@ pixels_ndvi = ndvi_data.rename(columns={"ndvi": "approx"})
 pixels_ndvi["col"] = "ndvi_map"
 
 fig, ax = plt.subplots(figsize=(10, 9))
-fig.patch.set_facecolor("#0a0a0a")
-ax.set_facecolor("#111111")
+fig.patch.set_facecolor("white")
+ax.set_facecolor("#f5f5f5")
 ax.set_xlim(xmin, xmax)
 ax.set_ylim(ymin, ymax)
 cx.add_basemap(ax, source=cx.providers.Esri.WorldImagery, zoom=TILE_ZOOM, alpha=1.0)
@@ -343,23 +346,26 @@ ax.scatter(ndvi_data["mx"], ndvi_data["my"],
 sm = ScalarMappable(cmap=NDVI_CMAP, norm=Normalize(vmin_ndvi, vmax_ndvi))
 sm.set_array([])
 cb = fig.colorbar(sm, ax=ax, shrink=0.7, pad=0.02, aspect=20)
-cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=8)
-cb.outline.set_edgecolor("#333333")
-cb.set_label("NDVI (S2 spring)", color="white", fontsize=8, labelpad=6)
+cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=8)
+cb.outline.set_edgecolor("lightgray")
+cb.set_label("NDVI (S2 spring)", color="black", fontsize=8, labelpad=6)
 
 ax.set_title("NDVI — попиксельная карта (10м)", fontsize=11, fontweight="bold",
-             color="white", pad=7)
+             color="black", pad=7)
 ax.set_xticks([])
 ax.set_yticks([])
 for spine in ax.spines.values():
-    spine.set_edgecolor("#222222")
+    spine.set_edgecolor("lightgray")
 fig.suptitle(
     f"{FARM}, {YEAR}  |  {total_px:,} пикселей 10м  |  Esri WorldImagery",
     fontsize=9, color="#888888", y=1.002,
 )
 fig.tight_layout(pad=0.4)
 out = OUT_DIR / f"pixel_{farm_slug}_{YEAR}_NDVI.png"
-fig.savefig(out, dpi=200, bbox_inches="tight", facecolor="#0a0a0a")
+fig.savefig(OUT_DIR / f"pixel_{farm_slug}_{YEAR}_NDVI.tiff", dpi=300,
+            bbox_inches="tight", facecolor="white",
+            pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(out, dpi=300, bbox_inches="tight", facecolor="white")
 plt.close(fig)
 print(f"  Saved: {out.name}")
 
@@ -378,11 +384,11 @@ all_labels = ["NDVI (S2 spring)"] + list(CHEM_LABELS.values())
 all_cmaps  = [NDVI_CMAP] + [CHEM_CMAPS[c] for c in CHEM_LABELS]
 
 fig, axes = plt.subplots(1, 7, figsize=(38, 7))
-fig.patch.set_facecolor("#0a0a0a")
+fig.patch.set_facecolor("white")
 
 for i, (col, label, cmap_) in enumerate(zip(all_cols, all_labels, all_cmaps)):
     ax = axes[i]
-    ax.set_facecolor("#111111")
+    ax.set_facecolor("#f5f5f5")
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
     cx.add_basemap(ax, source=cx.providers.Esri.WorldImagery, zoom=TILE_ZOOM, alpha=1.0)
@@ -408,22 +414,25 @@ for i, (col, label, cmap_) in enumerate(zip(all_cols, all_labels, all_cmaps)):
     sm = ScalarMappable(cmap=cmap_, norm=Normalize(vmin_, vmax_))
     sm.set_array([])
     cb = fig.colorbar(sm, ax=ax, shrink=0.7, pad=0.02, aspect=20)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=6)
-    cb.outline.set_edgecolor("#333333")
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=6)
+    cb.outline.set_edgecolor("lightgray")
 
-    ax.set_title(label, fontsize=8, fontweight="bold", color="white", pad=4)
+    ax.set_title(label, fontsize=8, fontweight="bold", color="black", pad=4)
     ax.set_xticks([]); ax.set_yticks([])
     for spine in ax.spines.values():
-        spine.set_edgecolor("#222222")
+        spine.set_edgecolor("lightgray")
 
 fig.suptitle(
     f"Pixel-level NDVI + approximated soil chemistry — {FARM}, {YEAR}"
     f"  |  {total_px:,} px @ 10м  |  Esri WorldImagery",
-    fontsize=10, color="white", y=1.008,
+    fontsize=10, color="black", y=1.008,
 )
 fig.tight_layout(pad=0.6)
 out = OUT_DIR / f"pixel_{farm_slug}_{YEAR}_summary.png"
-fig.savefig(out, dpi=150, bbox_inches="tight", facecolor="#0a0a0a")
+fig.savefig(OUT_DIR / f"pixel_{farm_slug}_{YEAR}_summary.tiff", dpi=300,
+            bbox_inches="tight", facecolor="white",
+            pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(out, dpi=300, bbox_inches="tight", facecolor="white")
 plt.close(fig)
 print(f"  Saved: {out.name}")
 

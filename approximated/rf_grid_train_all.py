@@ -359,9 +359,9 @@ reg_df.to_csv(OUT_RF / "rf_grid_registry.csv", index=False)
 print(f"Saved: rf_grid_registry.csv  ({len(reg_df)} rows = 288 models)")
 
 # ─── HEATMAP: ρ_val regression ────────────────────────────────────────────────
-DARK_BG  = "#1a1a2e"
-PANEL_BG = "#16213e"
-TEXT_CLR = "#e0e0e0"
+DARK_BG  = "white"
+PANEL_BG = "#f5f5f5"
+TEXT_CLR = "black"
 
 def make_heatmap(fig_title, metric_col, label, vmin_override=None, fname="heatmap.png",
                  best_col="is_best_reg", annotate_col2=None, annotate_label2=""):
@@ -385,7 +385,7 @@ def make_heatmap(fig_title, metric_col, label, vmin_override=None, fname="heatma
         for ri, k in enumerate(pivot.index):
             for ci, n in enumerate(pivot.columns):
                 v = pivot.loc[k, n]
-                color = "black" if v > (vmin + vmax) / 2 else "white"
+                color = "black" if v > (vmin + vmax) / 2 else "#888888"
                 ax.text(ci, ri - 0.18, f"{v:+.3f}" if v > -1 else f"{v:.3f}",
                         ha="center", va="center", fontsize=7.5,
                         color=color, fontweight="bold")
@@ -393,7 +393,7 @@ def make_heatmap(fig_title, metric_col, label, vmin_override=None, fname="heatma
                     v2 = p2.loc[k, n]
                     ax.text(ci, ri + 0.28, f"{annotate_label2}{v2:.3f}",
                             ha="center", va="center", fontsize=5.5,
-                            color="#555" if v > (vmin + vmax) / 2 else "#bbb")
+                            color="#555" if v > (vmin + vmax) / 2 else "#555555")
 
         if best_m is not None:
             bi = list(pivot.index).index(best_m["k"])
@@ -407,7 +407,7 @@ def make_heatmap(fig_title, metric_col, label, vmin_override=None, fname="heatma
         ax.set_yticklabels([str(k) for k in pivot.index], color=TEXT_CLR, fontsize=8)
         ax.set_xlabel("n_estimators", color=TEXT_CLR, fontsize=8)
         ax.set_ylabel("n_features",   color=TEXT_CLR, fontsize=8)
-        for sp in ax.spines.values(): sp.set_color("#444444")
+        for sp in ax.spines.values(): sp.set_color("lightgray")
 
         best_txt = ""
         if best_m is not None:
@@ -421,7 +421,10 @@ def make_heatmap(fig_title, metric_col, label, vmin_override=None, fname="heatma
         cb.set_label(label, color=TEXT_CLR, fontsize=7)
 
     fig.tight_layout(pad=1.0)
-    fig.savefig(OUT_PLOTS / fname, dpi=150, bbox_inches="tight", facecolor=DARK_BG)
+    tiff_fname = fname.replace(".png", ".tiff")
+    fig.savefig(OUT_PLOTS / tiff_fname, dpi=300, bbox_inches="tight",
+                facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+    fig.savefig(OUT_PLOTS / fname, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  Saved: {fname}")
 

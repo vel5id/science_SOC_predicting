@@ -276,9 +276,9 @@ print(f"Saved: rf_grid_best.csv")
 
 # ─── Heatmap: ρ_val for each element (k × n_est) ─────────────────────────────
 print("\nRendering ρ_val heatmaps ...")
-DARK_BG  = "#1a1a2e"
-PANEL_BG = "#16213e"
-TEXT_CLR = "#e0e0e0"
+DARK_BG  = "white"
+PANEL_BG = "#f5f5f5"
+TEXT_CLR = "black"
 
 fig, axes = plt.subplots(2, 3, figsize=(18, 11), facecolor=DARK_BG)
 fig.suptitle(f"Grid Search: ρ_val  (Spearman, validation set)\n"
@@ -306,10 +306,10 @@ for ax_i, tgt in enumerate(TARGETS):
             rv = pivot_val.loc[k, n]
             rt = pivot_test.loc[k, n]
             ax.text(ci, ri, f"{rv:+.3f}", ha="center", va="center",
-                    fontsize=7.5, color="black" if rv > (vmin+vmax)/2 else "white",
+                    fontsize=7.5, color="black" if rv > (vmin+vmax)/2 else "#888888",
                     fontweight="bold")
             ax.text(ci, ri + 0.30, f"te:{rt:+.3f}", ha="center", va="center",
-                    fontsize=5.5, color="#333333" if rv > (vmin+vmax)/2 else "#cccccc")
+                    fontsize=5.5, color="#333333" if rv > (vmin+vmax)/2 else "#555555")
 
     # Mark best cell
     best_m = best_models[tgt]
@@ -329,7 +329,7 @@ for ax_i, tgt in enumerate(TARGETS):
     ax.set_ylabel("n_features",   color=TEXT_CLR, fontsize=8, labelpad=4)
 
     for spine in ax.spines.values():
-        spine.set_color("#444444")
+        spine.set_color("lightgray")
 
     title = (f"{TARGET_LABELS[tgt]}\n"
              f"Best: k={best_m['k']} trees={best_m['n_est']}  "
@@ -341,8 +341,10 @@ for ax_i, tgt in enumerate(TARGETS):
     cb.set_label("ρ_val", color=TEXT_CLR, fontsize=7)
 
 fig.tight_layout(pad=1.0)
-fig.savefig(OUT_PLOTS / "rf_grid_heatmap.png", dpi=150, bbox_inches="tight",
-            facecolor=DARK_BG)
+fig.savefig(OUT_PLOTS / "rf_grid_heatmap.tiff", dpi=300, bbox_inches="tight",
+            facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(OUT_PLOTS / "rf_grid_heatmap.png", dpi=300, bbox_inches="tight",
+            facecolor="white")
 plt.close(fig)
 print(f"  Saved: rf_grid_heatmap.png")
 
@@ -387,7 +389,7 @@ for ax_i, tgt in enumerate(TARGETS):
     ax.set_xlabel("ρ_test  (Spearman on held-out 20% fields)", color=TEXT_CLR, fontsize=8)
     ax.tick_params(colors=TEXT_CLR, labelsize=7)
     for spine in ax.spines.values():
-        spine.set_color("#444444")
+        spine.set_color("lightgray")
 
     from matplotlib.patches import Patch
     from matplotlib.lines import Line2D
@@ -399,12 +401,14 @@ for ax_i, tgt in enumerate(TARGETS):
                    label="ρ_val marker"),
         ],
         fontsize=6, labelcolor=TEXT_CLR,
-        facecolor=PANEL_BG, edgecolor="#444444", loc="lower right",
+        facecolor=PANEL_BG, edgecolor="lightgray", loc="lower right",
     )
 
 fig.tight_layout(pad=1.0)
-fig.savefig(OUT_PLOTS / "rf_grid_test_summary.png", dpi=150, bbox_inches="tight",
-            facecolor=DARK_BG)
+fig.savefig(OUT_PLOTS / "rf_grid_test_summary.tiff", dpi=300, bbox_inches="tight",
+            facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(OUT_PLOTS / "rf_grid_test_summary.png", dpi=300, bbox_inches="tight",
+            facecolor="white")
 plt.close(fig)
 print(f"  Saved: rf_grid_test_summary.png")
 
@@ -444,7 +448,7 @@ for ax_i, tgt in enumerate(TARGETS):
     # 1:1 line
     lo = min(y_te_plot.min(), y_hat_te_plot.min())
     hi = max(y_te_plot.max(), y_hat_te_plot.max())
-    ax.plot([lo, hi], [lo, hi], "w--", lw=1.2, alpha=0.7)
+    ax.plot([lo, hi], [lo, hi], "k--", lw=1.2, alpha=0.7)
 
     # Regression line
     from numpy.polynomial import polynomial as P
@@ -461,11 +465,13 @@ for ax_i, tgt in enumerate(TARGETS):
     )
     ax.tick_params(colors=TEXT_CLR, labelsize=7)
     for spine in ax.spines.values():
-        spine.set_color("#444444")
+        spine.set_color("lightgray")
 
 fig.tight_layout(pad=1.0)
-fig.savefig(OUT_PLOTS / "rf_grid_scatter_test.png", dpi=150, bbox_inches="tight",
-            facecolor=DARK_BG)
+fig.savefig(OUT_PLOTS / "rf_grid_scatter_test.tiff", dpi=300, bbox_inches="tight",
+            facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(OUT_PLOTS / "rf_grid_scatter_test.png", dpi=300, bbox_inches="tight",
+            facecolor="white")
 plt.close(fig)
 print(f"  Saved: rf_grid_scatter_test.png")
 

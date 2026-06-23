@@ -464,8 +464,8 @@ def _draw_approximate_label(ax):
     ax.text(lx, ly, "Approximate",
             ha="left", va="bottom",
             fontsize=9, fontweight="bold",
-            color="white",
-            bbox=dict(boxstyle="round,pad=0.3", facecolor="#1a1a1a",
+            color="black",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow",
                       edgecolor="#888888", linewidth=1.0, alpha=0.85),
             zorder=9)
 
@@ -486,8 +486,8 @@ def render_map(val_col, title, cmap_, fname, vmin=None, vmax=None, footer_extra=
     v1 = vmax if vmax is not None else vals_in.quantile(0.98)
 
     fig, ax = plt.subplots(figsize=(10, 9))
-    fig.patch.set_facecolor("#0a0a0a")
-    ax.set_facecolor("#111111")
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor("#f5f5f5")
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
 
@@ -520,14 +520,14 @@ def render_map(val_col, title, cmap_, fname, vmin=None, vmax=None, footer_extra=
     sm = ScalarMappable(cmap=cmap_, norm=Normalize(v0, v1))
     sm.set_array([])
     cb = fig.colorbar(sm, ax=ax, shrink=0.70, pad=0.02, aspect=22)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=8)
-    cb.outline.set_edgecolor("#333333")
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=8)
+    cb.outline.set_edgecolor("lightgray")
 
-    ax.set_title(title, fontsize=12, fontweight="bold", color="white", pad=8)
+    ax.set_title(title, fontsize=12, fontweight="bold", color="black", pad=8)
     ax.set_xticks([])
     ax.set_yticks([])
     for spine in ax.spines.values():
-        spine.set_edgecolor("#222222")
+        spine.set_edgecolor("lightgray")
 
     fig.text(
         0.5, 0.01,
@@ -538,7 +538,10 @@ def render_map(val_col, title, cmap_, fname, vmin=None, vmax=None, footer_extra=
     fig.tight_layout(pad=0.4, rect=[0, 0.03, 1, 1])
 
     out = OUT_DIR / fname
-    fig.savefig(out, dpi=200, bbox_inches="tight", facecolor="#0a0a0a")
+    fig.savefig(OUT_DIR / fname.replace(".png", ".tiff"), dpi=300,
+                bbox_inches="tight", facecolor="white",
+                pil_kwargs={"compression": "tiff_lzw"})
+    fig.savefig(out, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  Saved: {out.name}")
 
@@ -573,11 +576,11 @@ labels_all = ["NDVI (Sentinel-2)"] + list(CHEM_LABELS.values())
 cmaps_all  = ["RdYlGn"] + [CHEM_CMAPS[c] for c in CHEM_LABELS]
 
 fig, axes = plt.subplots(1, 7, figsize=(40, 7))
-fig.patch.set_facecolor("#0a0a0a")
+fig.patch.set_facecolor("white")
 
 for i, (vc, lb, cm) in enumerate(zip(cols_all, labels_all, cmaps_all)):
     ax = axes[i]
-    ax.set_facecolor("#111111")
+    ax.set_facecolor("#f5f5f5")
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
     cx.add_basemap(ax, source=cx.providers.Esri.WorldImagery,
@@ -614,23 +617,26 @@ for i, (vc, lb, cm) in enumerate(zip(cols_all, labels_all, cmaps_all)):
     sm = ScalarMappable(cmap=cm, norm=Normalize(v0, v1))
     sm.set_array([])
     cb = fig.colorbar(sm, ax=ax, shrink=0.70, pad=0.02, aspect=22)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=6)
-    cb.outline.set_edgecolor("#333333")
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=6)
+    cb.outline.set_edgecolor("lightgray")
 
-    ax.set_title(lb, fontsize=8, fontweight="bold", color="white", pad=4)
+    ax.set_title(lb, fontsize=8, fontweight="bold", color="black", pad=4)
     ax.set_xticks([])
     ax.set_yticks([])
     for spine in ax.spines.values():
-        spine.set_edgecolor("#222222")
+        spine.set_edgecolor("lightgray")
 
 fig.suptitle(
     f"Real Sentinel-2 pixels 10m  —  {FARM}, {YEAR}  |  "
     f"{total_px:,} px  |  {IMAGE_LABEL}",
-    fontsize=10, color="white", y=1.008,
+    fontsize=10, color="black", y=1.008,
 )
 fig.tight_layout(pad=0.5)
 out = OUT_DIR / f"real_pixel_{farm_slug}_{YEAR}_summary.png"
-fig.savefig(out, dpi=150, bbox_inches="tight", facecolor="#0a0a0a")
+fig.savefig(OUT_DIR / f"real_pixel_{farm_slug}_{YEAR}_summary.tiff", dpi=300,
+            bbox_inches="tight", facecolor="white",
+            pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(out, dpi=300, bbox_inches="tight", facecolor="white")
 plt.close(fig)
 print(f"  Saved: {out.name}")
 

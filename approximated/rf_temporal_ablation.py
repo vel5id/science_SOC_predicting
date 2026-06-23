@@ -650,14 +650,14 @@ config_labels = {
 config_order = ["A_baseline_leaky", "B_spring_clean", "C_topo_climate", "D_autumn_subset"]
 config_colors = ["#e05c4a", "#4ab5e0", "#888888", "#6abf69"]
 
-fig = plt.figure(figsize=(20, 14), facecolor="#0a0a0a")
+fig = plt.figure(figsize=(20, 14), facecolor="white")
 gs = gridspec.GridSpec(2, 1, figure=fig, height_ratios=[1, 1],
                        left=0.08, right=0.95, top=0.90, bottom=0.08,
                        hspace=0.40)
 
 # ── Row 0: R2_cv comparison ──────────────────────────────────────
 ax_r2 = fig.add_subplot(gs[0])
-ax_r2.set_facecolor("#111111")
+ax_r2.set_facecolor("#f5f5f5")
 
 x_pos = np.arange(len(TARGETS))
 n_configs = len(config_order)
@@ -683,26 +683,26 @@ for ci, cfg in enumerate(config_order):
     for i, v in enumerate(r2_vals):
         if v != 0:
             ax_r2.text(x_pos[i] + offset, v + 0.01, f"{v:.2f}",
-                       ha="center", va="bottom", color="white",
+                       ha="center", va="bottom", color="black",
                        fontsize=6.5, fontweight="bold")
 
 ax_r2.set_xticks(x_pos)
-ax_r2.set_xticklabels([CHEM_LABELS[t] for t in TARGETS], color="white", fontsize=10)
-ax_r2.set_ylabel("R$^2$ (LOFO-CV)", color="white", fontsize=10)
+ax_r2.set_xticklabels([CHEM_LABELS[t] for t in TARGETS], color="black", fontsize=10)
+ax_r2.set_ylabel("R$^2$ (LOFO-CV)", color="black", fontsize=10)
 ax_r2.axhline(0.0, color="#444", lw=0.8, ls="-")
 ax_r2.axhline(0.5, color="#e05c4a", lw=1.2, ls="--", alpha=0.7, label="R$^2$ = 0.5 threshold")
 ax_r2.set_ylim(-0.15, 1.0)
-ax_r2.tick_params(colors="white")
+ax_r2.tick_params(colors="black")
 for sp in ax_r2.spines.values():
-    sp.set_edgecolor("#333")
-ax_r2.legend(facecolor="#1a1a1a", edgecolor="#555", labelcolor="white",
+    sp.set_edgecolor("lightgray")
+ax_r2.legend(facecolor="lightyellow", edgecolor="lightgray", labelcolor="black",
              fontsize=7.5, loc="upper right", ncol=3)
 ax_r2.set_title("R$^2$ (LOFO-CV)  |  Temporal Leakage Ablation",
-                color="white", fontsize=12, fontweight="bold", pad=10)
+                color="black", fontsize=12, fontweight="bold", pad=10)
 
 # ── Row 1: Spearman rho comparison ─────────────────────────────
 ax_rho = fig.add_subplot(gs[1])
-ax_rho.set_facecolor("#111111")
+ax_rho.set_facecolor("#f5f5f5")
 
 for ci, cfg in enumerate(config_order):
     rho_vals = []
@@ -731,31 +731,33 @@ for ci, cfg in enumerate(config_order):
     for i, v in enumerate(rho_vals):
         if v != 0:
             ax_rho.text(x_pos[i] + offset, v + 0.01, f"{v:.2f}",
-                        ha="center", va="bottom", color="white",
+                        ha="center", va="bottom", color="black",
                         fontsize=6.5, fontweight="bold")
 
 ax_rho.set_xticks(x_pos)
-ax_rho.set_xticklabels([CHEM_LABELS[t] for t in TARGETS], color="white", fontsize=10)
-ax_rho.set_ylabel("|Spearman rho| (LOFO-CV)", color="white", fontsize=10)
+ax_rho.set_xticklabels([CHEM_LABELS[t] for t in TARGETS], color="black", fontsize=10)
+ax_rho.set_ylabel("|Spearman rho| (LOFO-CV)", color="black", fontsize=10)
 ax_rho.axhline(0.5, color="#e05c4a", lw=1.2, ls="--", alpha=0.7, label="|rho| = 0.5 threshold")
 ax_rho.axhline(0.7, color="#888", lw=0.8, ls=":", alpha=0.5)
 ax_rho.set_ylim(0, 1.05)
-ax_rho.tick_params(colors="white")
+ax_rho.tick_params(colors="black")
 for sp in ax_rho.spines.values():
-    sp.set_edgecolor("#333")
-ax_rho.legend(facecolor="#1a1a1a", edgecolor="#555", labelcolor="white",
+    sp.set_edgecolor("lightgray")
+ax_rho.legend(facecolor="lightyellow", edgecolor="lightgray", labelcolor="black",
               fontsize=7.5, loc="upper right", ncol=3)
 ax_rho.set_title("|Spearman rho| (LOFO-CV)  |  Temporal Leakage Ablation",
-                 color="white", fontsize=12, fontweight="bold", pad=10)
+                 color="black", fontsize=12, fontweight="bold", pad=10)
 
 fig.suptitle(
     "Temporal Leakage Ablation Experiment\n"
     "75% of samples are spring probes using summer/autumn 'future' satellite data",
-    color="white", fontsize=13, fontweight="bold", y=0.97,
+    color="black", fontsize=13, fontweight="bold", y=0.97,
 )
 
 out_fig = OUT_DIR / "ablation_temporal_summary.png"
-fig.savefig(out_fig, dpi=160, bbox_inches="tight", facecolor="#0a0a0a")
+fig.savefig(OUT_DIR / "ablation_temporal_summary.tiff", dpi=300, bbox_inches="tight",
+            facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(out_fig, dpi=300, bbox_inches="tight", facecolor="white")
 plt.close(fig)
 print(f"  Saved: {out_fig.name}")
 

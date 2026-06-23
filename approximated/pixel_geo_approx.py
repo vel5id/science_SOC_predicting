@@ -396,8 +396,8 @@ def _draw_approximate_label(ax, fontsize=9):
     ly = ymin + (ymax - ymin) * 0.03
     ax.text(lx, ly, "Approximate\n(model extrapolation)",
             ha="left", va="bottom",
-            fontsize=fontsize, fontweight="bold", color="white",
-            bbox=dict(boxstyle="round,pad=0.3", facecolor="#111111",
+            fontsize=fontsize, fontweight="bold", color="black",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow",
                       edgecolor="#999999", linewidth=1.0, alpha=0.88),
             zorder=9)
 
@@ -450,8 +450,8 @@ def render_map(col, title, cmap_, fname, vmin=None, vmax=None, footer_extra=""):
     v1 = vmax if vmax is not None else vals_in.quantile(0.98)
 
     fig, ax = plt.subplots(figsize=(10, 9))
-    fig.patch.set_facecolor("#0a0a0a")
-    ax.set_facecolor("#111111")
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor("#f5f5f5")
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
 
@@ -487,15 +487,15 @@ def render_map(col, title, cmap_, fname, vmin=None, vmax=None, footer_extra=""):
     sm = ScalarMappable(cmap=cmap_, norm=Normalize(v0, v1))
     sm.set_array([])
     cb = fig.colorbar(sm, ax=ax, shrink=0.70, pad=0.02, aspect=22)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=8)
-    cb.outline.set_edgecolor("#333333")
-    cb.set_label(title, color="white", fontsize=7, labelpad=6)
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=8)
+    cb.outline.set_edgecolor("lightgray")
+    cb.set_label(title, color="black", fontsize=7, labelpad=6)
 
-    ax.set_title(title, fontsize=12, fontweight="bold", color="white", pad=8)
+    ax.set_title(title, fontsize=12, fontweight="bold", color="black", pad=8)
     ax.set_xticks([])
     ax.set_yticks([])
     for spine in ax.spines.values():
-        spine.set_edgecolor("#222222")
+        spine.set_edgecolor("lightgray")
 
     fig.text(
         0.5, 0.01,
@@ -506,7 +506,9 @@ def render_map(col, title, cmap_, fname, vmin=None, vmax=None, footer_extra=""):
     fig.tight_layout(pad=0.4, rect=[0, 0.03, 1, 1])
 
     out = OUT_DIR / fname
-    fig.savefig(out, dpi=200, bbox_inches="tight", facecolor="#0a0a0a")
+    fig.savefig(OUT_DIR / fname.replace(".png", ".tiff"), dpi=300, bbox_inches="tight",
+                facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+    fig.savefig(out, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  Saved: {out.name}")
 
@@ -516,8 +518,8 @@ sub_ndvi = pixels_df[["mx", "my", "ndvi"]].dropna()
 if len(sub_ndvi) > 0:
     v0n, v1n = sub_ndvi["ndvi"].quantile(0.02), sub_ndvi["ndvi"].quantile(0.98)
     fig, ax = plt.subplots(figsize=(10, 9))
-    fig.patch.set_facecolor("#0a0a0a")
-    ax.set_facecolor("#111111")
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor("#f5f5f5")
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
     cx.add_basemap(ax, source=cx.providers.Esri.WorldImagery, zoom=TILE_ZOOM, alpha=1.0)
@@ -540,21 +542,24 @@ if len(sub_ndvi) > 0:
     sm = ScalarMappable(cmap="RdYlGn", norm=Normalize(v0n, v1n))
     sm.set_array([])
     cb = fig.colorbar(sm, ax=ax, shrink=0.70, pad=0.02, aspect=22)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=8)
-    cb.outline.set_edgecolor("#333333")
-    cb.set_label("NDVI", color="white", fontsize=7, labelpad=6)
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=8)
+    cb.outline.set_edgecolor("lightgray")
+    cb.set_label("NDVI", color="black", fontsize=7, labelpad=6)
 
     ax.set_title("NDVI — real Sentinel-2 pixels @ 10m",
-                 fontsize=12, fontweight="bold", color="white", pad=8)
+                 fontsize=12, fontweight="bold", color="black", pad=8)
     ax.set_xticks([]); ax.set_yticks([])
     for spine in ax.spines.values():
-        spine.set_edgecolor("#222222")
+        spine.set_edgecolor("lightgray")
     fig.text(0.5, 0.01,
              f"{FARM}  |  {total_px:,} real S2 pixels @ 10m  |  {IMAGE_LABEL}  |  NDVI (no model applied)",
              ha="center", va="bottom", color="#666666", fontsize=7.5)
     fig.tight_layout(pad=0.4, rect=[0, 0.03, 1, 1])
     out = OUT_DIR / f"geo_approx_{farm_slug}_{YEAR}_NDVI.png"
-    fig.savefig(out, dpi=200, bbox_inches="tight", facecolor="#0a0a0a")
+    fig.savefig(OUT_DIR / f"geo_approx_{farm_slug}_{YEAR}_NDVI.tiff", dpi=300,
+                bbox_inches="tight", facecolor="white",
+                pil_kwargs={"compression": "tiff_lzw"})
+    fig.savefig(out, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  Saved: {out.name}")
 
@@ -591,12 +596,12 @@ src_col_in  = ["ndvi"] + [f"geo_{c}" for c in CHEM_LABELS]
 src_col_out = ["ndvi"] + [f"geo_{c}" for c in CHEM_LABELS]
 
 fig, axes = plt.subplots(1, 7, figsize=(42, 7))
-fig.patch.set_facecolor("#0a0a0a")
+fig.patch.set_facecolor("white")
 
 for i, (vc_in, vc_out, lb, cm) in enumerate(
         zip(src_col_in, src_col_out, labels_all, cmaps_all)):
     ax = axes[i]
-    ax.set_facecolor("#111111")
+    ax.set_facecolor("#f5f5f5")
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
     cx.add_basemap(ax, source=cx.providers.Esri.WorldImagery, zoom=TILE_ZOOM, alpha=1.0)
@@ -630,24 +635,27 @@ for i, (vc_in, vc_out, lb, cm) in enumerate(
     sm = ScalarMappable(cmap=cm, norm=Normalize(v0, v1))
     sm.set_array([])
     cb = fig.colorbar(sm, ax=ax, shrink=0.70, pad=0.02, aspect=22)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=6)
-    cb.outline.set_edgecolor("#333333")
-    cb.set_label(lb, color="white", fontsize=5, labelpad=4)
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=6)
+    cb.outline.set_edgecolor("lightgray")
+    cb.set_label(lb, color="black", fontsize=5, labelpad=4)
 
-    ax.set_title(lb, fontsize=8, fontweight="bold", color="white", pad=4)
+    ax.set_title(lb, fontsize=8, fontweight="bold", color="black", pad=4)
     ax.set_xticks([]); ax.set_yticks([])
     for spine in ax.spines.values():
-        spine.set_edgecolor("#222222")
+        spine.set_edgecolor("lightgray")
 
 _cv_note = "ρ_cv (LOFO-CV)" if _cv_rho else "ρ values are in-sample (run pixel_geo_cv.py for cross-validated ρ)"
 fig.suptitle(
     f"Geo-aware soil chemistry — {FARM}, {YEAR}  |  "
     f"{total_px:,} real S2 pixels @ 10m  |  Ridge(spectral+UTM) · field-level trained, pixel-level applied  |  {_cv_note}",
-    fontsize=10, color="white", y=1.008,
+    fontsize=10, color="black", y=1.008,
 )
 fig.tight_layout(pad=0.5)
 out = OUT_DIR / f"geo_approx_{farm_slug}_{YEAR}_summary.png"
-fig.savefig(out, dpi=150, bbox_inches="tight", facecolor="#0a0a0a")
+fig.savefig(OUT_DIR / f"geo_approx_{farm_slug}_{YEAR}_summary.tiff", dpi=300,
+            bbox_inches="tight", facecolor="white",
+            pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(out, dpi=300, bbox_inches="tight", facecolor="white")
 plt.close(fig)
 print(f"  Saved: {out.name}")
 

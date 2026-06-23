@@ -409,8 +409,8 @@ heat = top_feats.set_index("display")[rho_cols].copy()
 heat.columns = [CHEM_LABELS[c] for c in CHEM_COLS]
 
 fig, ax = plt.subplots(figsize=(10, 16))
-fig.patch.set_facecolor("#0a0a0a")
-ax.set_facecolor("#111111")
+fig.patch.set_facecolor("white")
+ax.set_facecolor("#f5f5f5")
 
 vmax = 0.7
 im = ax.imshow(heat.values, aspect="auto", cmap="RdBu_r",
@@ -421,35 +421,37 @@ for i in range(heat.shape[0]):
         val = heat.values[i, j]
         if np.isnan(val):
             continue
-        color = "black" if abs(val) > 0.35 else "white"
+        color = "black" if abs(val) > 0.35 else "#cccccc"
         ax.text(j, i, f"{val:+.2f}", ha="center", va="center",
                 fontsize=6.5, color=color)
 
 ax.set_xticks(range(len(heat.columns)))
-ax.set_xticklabels(heat.columns, color="white", fontsize=9)
+ax.set_xticklabels(heat.columns, color="black", fontsize=9)
 ax.set_yticks(range(len(heat.index)))
-ax.set_yticklabels(heat.index, color="white", fontsize=7)
-ax.tick_params(colors="white")
+ax.set_yticklabels(heat.index, color="black", fontsize=7)
+ax.tick_params(colors="black")
 
 cb = fig.colorbar(im, ax=ax, pad=0.02, shrink=0.5, aspect=30)
-cb.set_label("Spearman ρ", color="white", fontsize=9)
-cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=8)
-cb.outline.set_edgecolor("#333")
+cb.set_label("Spearman ρ", color="black", fontsize=9)
+cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=8)
+cb.outline.set_edgecolor("lightgray")
 
 ax.set_title(
     "Spearman ρ: EXTRA features × soil chemistry\n"
     f"(top-{top_n} by max |ρ|, Groups: S2_extra / temporal / cross-sensor / GLCM-extra)",
-    color="white", fontsize=10, fontweight="bold", pad=10,
+    color="black", fontsize=10, fontweight="bold", pad=10,
 )
 for spine in ax.spines.values():
-    spine.set_edgecolor("#333333")
+    spine.set_edgecolor("lightgray")
 
 fig.text(0.5, 0.005,
          "n=1215 grid points · pure post-processing from full_dataset.csv bands",
          ha="center", color="#666", fontsize=7.5)
 fig.tight_layout(rect=[0, 0.015, 1, 1])
 out_hm = OUT_DIR / "extra_heatmap.png"
-fig.savefig(out_hm, dpi=180, bbox_inches="tight", facecolor="#0a0a0a")
+fig.savefig(OUT_DIR / "extra_heatmap.tiff", dpi=300, bbox_inches="tight",
+            facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(out_hm, dpi=300, bbox_inches="tight", facecolor="white")
 plt.close(fig)
 print(f"  Saved: {out_hm.name}")
 
@@ -477,12 +479,12 @@ ncols = 4
 nrows = (n_panels + ncols - 1) // ncols
 
 fig2, axes = plt.subplots(nrows, ncols, figsize=(ncols * 4.5, nrows * 4.0))
-fig2.patch.set_facecolor("#0a0a0a")
+fig2.patch.set_facecolor("white")
 axes_flat = axes.ravel() if nrows > 1 else axes if ncols == 1 else axes.ravel()
 
 for i, (feat, disp, chem, rho) in enumerate(top_pairs_uniq[:n_panels]):
     ax = axes_flat[i]
-    ax.set_facecolor("#111111")
+    ax.set_facecolor("#f5f5f5")
 
     sub = df[[feat, chem]].dropna()
     x_vals = sub[feat].values
@@ -495,22 +497,22 @@ for i, (feat, disp, chem, rho) in enumerate(top_pairs_uniq[:n_panels]):
     xr = np.linspace(x_vals.min(), x_vals.max(), 100)
     ax.plot(xr, np.polyval(z, xr), color="#4a9eda", linewidth=1.5, zorder=4)
 
-    ax.set_xlabel(disp, color="white", fontsize=7.5)
-    ax.set_ylabel(CHEM_LABELS[chem], color="white", fontsize=7.5)
-    ax.tick_params(colors="white", labelsize=7)
+    ax.set_xlabel(disp, color="black", fontsize=7.5)
+    ax.set_ylabel(CHEM_LABELS[chem], color="black", fontsize=7.5)
+    ax.tick_params(colors="black", labelsize=7)
     for spine in ax.spines.values():
-        spine.set_edgecolor("#333333")
+        spine.set_edgecolor("lightgray")
 
     ax.text(0.05, 0.95, f"ρ = {rho:+.3f}\nn = {len(sub)}",
-            transform=ax.transAxes, ha="left", va="top", color="white",
+            transform=ax.transAxes, ha="left", va="top", color="black",
             fontsize=8.5, fontweight="bold",
-            bbox=dict(boxstyle="round,pad=0.25", facecolor="#1a1a1a",
+            bbox=dict(boxstyle="round,pad=0.25", facecolor="lightyellow",
                       edgecolor="#555", alpha=0.9))
 
     cb2 = fig2.colorbar(sc, ax=ax, pad=0.02, shrink=0.80)
-    cb2.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=6)
-    cb2.outline.set_edgecolor("#333")
-    cb2.set_label(CHEM_LABELS[chem], color="white", fontsize=6)
+    cb2.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=6)
+    cb2.outline.set_edgecolor("lightgray")
+    cb2.set_label(CHEM_LABELS[chem], color="black", fontsize=6)
 
 for j in range(n_panels, len(axes_flat)):
     axes_flat[j].set_visible(False)
@@ -518,11 +520,13 @@ for j in range(n_panels, len(axes_flat)):
 fig2.suptitle(
     "Top EXTRA feature × soil chemistry scatter plots\n"
     "(Spearman ρ, n=1215 grid points, new indices + temporal + cross-sensor + GLCM-extra)",
-    color="white", fontsize=10, fontweight="bold", y=1.01,
+    color="black", fontsize=10, fontweight="bold", y=1.01,
 )
 fig2.tight_layout(pad=0.5)
 out_sc = OUT_DIR / "extra_top_scatter.png"
-fig2.savefig(out_sc, dpi=180, bbox_inches="tight", facecolor="#0a0a0a")
+fig2.savefig(OUT_DIR / "extra_top_scatter.tiff", dpi=300, bbox_inches="tight",
+             facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+fig2.savefig(out_sc, dpi=300, bbox_inches="tight", facecolor="white")
 plt.close(fig2)
 print(f"  Saved: {out_sc.name}")
 

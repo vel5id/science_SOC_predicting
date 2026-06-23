@@ -418,13 +418,13 @@ for tgt in TARGETS:
 
 # ─── 7. Feature selection curve plot ──────────────────────────────────────────
 print("\nSaving feature selection sweep plots ...")
-fig, axes = plt.subplots(2, 3, figsize=(16, 9), facecolor="#1a1a2e")
+fig, axes = plt.subplots(2, 3, figsize=(16, 9), facecolor="white")
 fig.suptitle(f"RF Competitive Feature Selection Sweep  |  {FARM} {YEAR}",
-             color="white", fontsize=13, fontweight="bold", y=1.01)
+             color="black", fontsize=13, fontweight="bold", y=1.01)
 
 for ax_i, tgt in enumerate(TARGETS):
     ax = axes[ax_i // 3][ax_i % 3]
-    ax.set_facecolor("#16213e")
+    ax.set_facecolor("#f5f5f5")
     sweep = selection_logs[tgt]
     ks   = [s[0] for s in sweep]
     rhos = [s[1] for s in sweep]
@@ -435,17 +435,19 @@ for ax_i, tgt in enumerate(TARGETS):
     ax.axvline(best_k, color="#ff6b6b", lw=1.5, ls="--", alpha=0.8)
     ax.scatter([best_k], [best_rho], color="#ff6b6b", s=80, zorder=5)
     ax.set_title(f"{TARGET_LABELS[tgt]}  |  best k={best_k}  ρ={best_rho:+.3f}",
-                 color="white", fontsize=9, fontweight="bold")
-    ax.set_xlabel("n_features", color="#aaaaaa", fontsize=8)
-    ax.set_ylabel("ρ_cv (LOFO)", color="#aaaaaa", fontsize=8)
-    ax.tick_params(colors="#aaaaaa", labelsize=7)
+                 color="black", fontsize=9, fontweight="bold")
+    ax.set_xlabel("n_features", color="black", fontsize=8)
+    ax.set_ylabel("ρ_cv (LOFO)", color="black", fontsize=8)
+    ax.tick_params(colors="black", labelsize=7)
     for spine in ax.spines.values():
-        spine.set_color("#444444")
+        spine.set_color("lightgray")
     ax.set_xlim(min(ks) - 1, max(ks) + 1)
 
 fig.tight_layout()
-fig.savefig(OUT_DIR / "rf_feature_sweep.png", dpi=150, bbox_inches="tight",
-            facecolor="#1a1a2e")
+fig.savefig(OUT_DIR / "rf_feature_sweep.tiff", dpi=300, bbox_inches="tight",
+            facecolor="white", pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(OUT_DIR / "rf_feature_sweep.png", dpi=300, bbox_inches="tight",
+            facecolor="white")
 plt.close(fig)
 print(f"  Saved: rf_feature_sweep.png")
 
@@ -501,8 +503,8 @@ def _draw_approximate_label(ax, fontsize=9):
     ly = ymin + (ymax - ymin) * 0.03
     ax.text(lx, ly, "Approximate\n(model extrapolation)",
             ha="left", va="bottom",
-            fontsize=fontsize, fontweight="bold", color="white",
-            bbox=dict(boxstyle="round,pad=0.3", facecolor="#111111",
+            fontsize=fontsize, fontweight="bold", color="black",
+            bbox=dict(boxstyle="round,pad=0.3", facecolor="lightyellow",
                       edgecolor="#999999", linewidth=1.0, alpha=0.88),
             zorder=9)
 
@@ -549,8 +551,8 @@ for tgt in TARGETS:
     v1 = vals_in.quantile(0.98)
 
     fig, ax = plt.subplots(figsize=(10, 9))
-    fig.patch.set_facecolor("#0a0a0a")
-    ax.set_facecolor("#111111")
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor("#f5f5f5")
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
 
@@ -577,14 +579,14 @@ for tgt in TARGETS:
     sm = ScalarMappable(cmap=cmap_, norm=Normalize(v0, v1))
     sm.set_array([])
     cb = fig.colorbar(sm, ax=ax, shrink=0.70, pad=0.02, aspect=22)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=8)
-    cb.outline.set_edgecolor("#333333")
-    cb.set_label(label, color="white", fontsize=7, labelpad=6)
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=8)
+    cb.outline.set_edgecolor("lightgray")
+    cb.set_label(label, color="black", fontsize=7, labelpad=6)
 
-    ax.set_title(label, fontsize=12, fontweight="bold", color="white", pad=8)
+    ax.set_title(label, fontsize=12, fontweight="bold", color="black", pad=8)
     ax.set_xticks([]); ax.set_yticks([])
     for spine in ax.spines.values():
-        spine.set_edgecolor("#222222")
+        spine.set_edgecolor("lightgray")
 
     foot = (f"  |  RF({RF_N_EST} trees, {m['best_k']} features)"
             f"  |  ρ_cv={m['best_rho']:+.3f}  OOB_R²={m['oob_r2']:.3f}"
@@ -598,8 +600,11 @@ for tgt in TARGETS:
     fig.tight_layout(pad=0.4, rect=[0, 0.03, 1, 1])
 
     fname = f"rf_geo_{farm_slug}_{YEAR}_{tgt}.png"
-    fig.savefig(OUT_DIR / fname, dpi=200, bbox_inches="tight",
-                facecolor="#0a0a0a")
+    fig.savefig(OUT_DIR / fname.replace(".png", ".tiff"), dpi=300,
+                bbox_inches="tight", facecolor="white",
+                pil_kwargs={"compression": "tiff_lzw"})
+    fig.savefig(OUT_DIR / fname, dpi=300, bbox_inches="tight",
+                facecolor="white")
     plt.close(fig)
     print(f"  Saved: {fname}")
 
@@ -613,7 +618,7 @@ v1n = sub_ndvi["ndvi"].quantile(0.98)
 outside_df["ndvi_col"] = outside_df["ndvi"]
 
 fig, axes = plt.subplots(1, 7, figsize=(42, 7))
-fig.patch.set_facecolor("#0a0a0a")
+fig.patch.set_facecolor("white")
 
 panel_cols  = ["ndvi"]   + [f"rf_{t}" for t in TARGETS]
 panel_labs  = ["NDVI (real S2)"] + [TARGET_LABELS[t] for t in TARGETS]
@@ -624,7 +629,7 @@ outside_src = ["ndvi"]   + [f"rf_{t}" for t in TARGETS]   # column in outside_df
 for i, (vc_in, vc_out, lb, cm) in enumerate(
         zip(inside_src, outside_src, panel_labs, panel_cmaps)):
     ax = axes[i]
-    ax.set_facecolor("#111111")
+    ax.set_facecolor("#f5f5f5")
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
     cx.add_basemap(ax, source=cx.providers.Esri.WorldImagery, zoom=TILE_ZOOM, alpha=1.0)
@@ -659,9 +664,9 @@ for i, (vc_in, vc_out, lb, cm) in enumerate(
     sm = ScalarMappable(cmap=cm, norm=Normalize(v0, v1))
     sm.set_array([])
     cb = fig.colorbar(sm, ax=ax, shrink=0.70, pad=0.02, aspect=22)
-    cb.ax.yaxis.set_tick_params(color="white", labelcolor="white", labelsize=6)
-    cb.outline.set_edgecolor("#333333")
-    cb.set_label(lb, color="white", fontsize=5, labelpad=4)
+    cb.ax.yaxis.set_tick_params(color="black", labelcolor="black", labelsize=6)
+    cb.outline.set_edgecolor("lightgray")
+    cb.set_label(lb, color="black", fontsize=5, labelpad=4)
 
     rho_note = ""
     if lb != "NDVI (real S2)" and TARGETS[max(i - 1, 0)] in best_models:
@@ -669,20 +674,23 @@ for i, (vc_in, vc_out, lb, cm) in enumerate(
         m = best_models[tgt_k]
         rho_note = f"\nρ_cv={m['best_rho']:+.3f}  k={m['best_k']}"
     ax.set_title(lb + rho_note, fontsize=7.5, fontweight="bold",
-                 color="white", pad=4)
+                 color="black", pad=4)
     ax.set_xticks([]); ax.set_yticks([])
     for spine in ax.spines.values():
-        spine.set_edgecolor("#222222")
+        spine.set_edgecolor("lightgray")
 
 fig.suptitle(
     f"RF soil chemistry — {FARM}, {YEAR}  |  {total_px:,} real S2 pixels @ 10m  |"
     f"  RF({RF_N_EST} trees) · competitive selection {RF_MIN_FEAT}→{RF_MAX_FEAT} features",
-    fontsize=10, color="white", y=1.008,
+    fontsize=10, color="black", y=1.008,
 )
 fig.tight_layout(pad=0.5)
 fname_sum = f"rf_geo_{farm_slug}_{YEAR}_summary.png"
-fig.savefig(OUT_DIR / fname_sum, dpi=150, bbox_inches="tight",
-            facecolor="#0a0a0a")
+fig.savefig(OUT_DIR / fname_sum.replace(".png", ".tiff"), dpi=300,
+            bbox_inches="tight", facecolor="white",
+            pil_kwargs={"compression": "tiff_lzw"})
+fig.savefig(OUT_DIR / fname_sum, dpi=300, bbox_inches="tight",
+            facecolor="white")
 plt.close(fig)
 print(f"  Saved: {fname_sum}")
 
