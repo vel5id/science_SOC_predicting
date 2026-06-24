@@ -37,6 +37,34 @@ substituted.
 | `selected/` | — | — | — | — | — | Per-target top-15 MDI feature lists (`*_best_features.txt` + `best_features.json`) used by the models. **Tracked in git.** | ✅ **yes** |
 | `selected_old/` | — | — | — | — | — | Earlier feature-selection snapshot (same content now mirrored into `selected/`). | reference |
 
+## Known data-quality note — duplicate field "19-20"
+
+A post-publication audit found that field **`19-20`** (farm *Агро Парасат*, sampled
+**2023-04-25**) was entered a **second time** under the name **`19-20 (1)`**. Its 14 grid
+points appear **twice** in the dataset — identical coordinates, geometry and identical six
+lab values (pH, SOC, NO₃, P₂O₅, K₂O, S), differing only in the `id` column (the duplicate
+copies are `id` **379–392**).
+
+Therefore the raw build holds **1085 records / 81 field names**, but the number of **unique
+samples is 1071** and the number of **unique fields is 80**.
+
+- Because the duplicate pair shares coordinates, under both **Field-LOFO** and **Farm-LOFO**
+  the two copies always fall in the **same** CV fold — they do **not** leak across
+  train/test. The only effect is a ~1.3 % inflation of `n` (those 14 samples are counted
+  twice in pooled metrics), which is negligible for the Spearman-ρ rankings the paper reports.
+- **The published paper (Agriculture 2026, 16, 1239) reports n = 1085 / 81 fields**, and the
+  canonical `master_dataset.csv` (1085 × 530) is kept **unchanged** so the published metrics
+  remain reproducible.
+
+A de-duplicated build (**1071 × 530, 80 fields**) can be produced on demand, without touching
+the canonical file:
+
+```bash
+python scripts/deduplicate_dataset.py \
+    --input  data/features/master_dataset.csv \
+    --output data/features/master_dataset_dedup.csv
+```
+
 ## How `master_dataset_old.csv` and `master_dataset_leaky_backup.csv` differ
 
 They are **identical in all 529 shared columns and all 1085 rows**. The *only* difference:
