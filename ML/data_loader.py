@@ -6,6 +6,7 @@ if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
 import io
+import warnings
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -14,6 +15,13 @@ from typing import Tuple, List, Generator
 # Define core constants
 DATA_PATH = os.path.join(_PROJECT_ROOT, "data/features/master_dataset.csv")
 SELECTED_DIR = os.path.join(_PROJECT_ROOT, "data/features/selected")
+
+# Canonical paper build (Agriculture 2026, 16, 1239): 1085 samples, 81 fields,
+# 20 farms, 530 features. master_dataset.csv MUST be this build to reproduce the
+# published metrics. Obtain it from the dataset record on Zenodo:
+ZENODO_DATASET_DOI = "10.5281/zenodo.19496443"
+EXPECTED_FIELDS = 81
+EXPECTED_SAMPLES = 1085
 
 class SpatialDataLoader:
     """
@@ -51,23 +59,48 @@ class SpatialDataLoader:
     def _load_and_preprocess(self):
         """Loads master dataset, filters NaNs for the target, and optionally scales X."""
         if not os.path.exists(DATA_PATH):
-            raise FileNotFoundError(f"Master dataset not found at {DATA_PATH}")
-            
+            raise FileNotFoundError(
+                f"Master dataset not found at {DATA_PATH}\n"
+                f"The dataset is not shipped in the code repository (heavy / commercially "
+                f"sensitive). Download it from the Zenodo dataset record "
+                f"(DOI {ZENODO_DATASET_DOI}) and place the canonical paper build "
+                f"(1085 samples x 530 features) at data/features/master_dataset.csv."
+            )
+
         # load raw data
         raw_df = pd.read_csv(DATA_PATH, low_memory=False)
-        
+
         if self.target not in raw_df.columns:
             raise ValueError(f"Target column '{self.target}' not found in dataset.")
-            
+
+        # Sanity check: warn if this is not the canonical paper build. Reproducing the
+        # published metrics requires the 1085-sample / 81-field / 20-farm build; later
+        # experimental builds (e.g. extra farms/years) will NOT match the paper.
+        n_fields = raw_df['field_name'].nunique() if 'field_name' in raw_df.columns else None
+        if n_fields is not None and n_fields != EXPECTED_FIELDS:
+            warnings.warn(
+                f"master_dataset.csv has {len(raw_df)} rows / {n_fields} fields, but the "
+                f"paper build has {EXPECTED_SAMPLES} rows / {EXPECTED_FIELDS} fields. "
+                f"This looks like a different dataset version; published metrics may not "
+                f"reproduce. See README 'Reproducibility' and Zenodo {ZENODO_DATASET_DOI}.",
+                stacklevel=2,
+            )
+
         # 1. Drop rows where target is NaN
         df_valid = raw_df.dropna(subset=[self.target]).reset_index(drop=True)
         self.y = df_valid[self.target].values
         self.fields = df_valid['field_name'].values
-        
+
         # 2. Extract X
         missing_cols = [col for col in self.features_list if col not in df_valid.columns]
         if missing_cols:
-            raise ValueError(f"Missing feature columns in DB: {missing_cols}")
+            raise ValueError(
+                f"Missing feature columns in master_dataset.csv: {missing_cols}\n"
+                f"The selected/{self.target}_best_features.txt list expects features that are "
+                f"absent from the loaded dataset. This usually means master_dataset.csv is not "
+                f"the canonical paper build. Download the dataset from Zenodo "
+                f"(DOI {ZENODO_DATASET_DOI}) and use the 1085x530 build."
+            )
             
         X_df = df_valid[self.features_list]
         

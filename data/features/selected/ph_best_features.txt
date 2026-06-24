@@ -1,0 +1,15 @@
+spectral_GNDVI_spring
+glcm_glcm_nir_ent_autumn
+ts_s2_MSI_std
+delta_s2_BSI_summer_to_late_summer
+spectral_B11_B8_late_summer
+ts_s2_MSI_slope
+l8_SR_B7_spring
+topo_aspect_cos
+spectral_PCA_1_late_summer
+glcm_ratio_contrast_summer
+spectral_PCA_4_summer
+ts_s2_RENDVI_slope
+s2_B4_summer
+spectral_PCA_3_late_summer
+l8_SR_B6_summer

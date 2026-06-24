@@ -1,0 +1,6 @@
+s2_B2_spring
+topo_DEM
+s2_MSI_spring
+ts_l8_GNDVI_mean
+range_l8_NDVI
+l8_SR_B6_spring

@@ -1,0 +1,15 @@
+s2_BSI_spring
+spectral_PCA_5_summer
+l8_GNDVI_spring
+topo_DEM
+climate_GS_precip
+spectral_PCA_5_spring
+spectral_B3_B4_spring
+glcm_glcm_red_ent_late_summer
+l8_GNDVI_late_summer
+glcm_ratio_asm_summer
+s2_B12_autumn
+spectral_B3_B4_late_summer
+cs_SAVI_ratio_late_summer
+delta_s2_GNDVI_late_summer_to_autumn
+ts_s2_PSRI_mean
