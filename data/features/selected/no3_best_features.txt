@@ -1,0 +1,15 @@
+glcm_glcm_nir_idm_summer
+l8_GNDVI_spring
+glcm_glcm_nir_contrast_late_summer
+glcm_glcm_nir_contrast_spring
+glcm_ratio_contrast_late_summer
+climate_MAP
+spectral_BSI_spring
+s2_B3_spring
+cs_NDVI_ratio_spring
+l8_SR_B7_autumn
+s2_SAVI_spring
+topo_DEM
+l8_SR_B5_summer
+cs_SAVI_diff_late_summer
+s2_B3_summer

@@ -1,0 +1,15 @@
+climate_GS_temp
+spectral_PCA_3_autumn
+l8_SR_B2_autumn
+cs_NDVI_diff_late_summer
+topo_aspect_cos
+topo_profile_curvature
+topo_TPI
+delta_s2_GNDVI_late_summer_to_autumn
+ts_s2_MSI_slope
+ts_l8_GNDVI_slope
+glcm_ratio_idm_late_summer
+glcm_ratio_ent_autumn
+glcm_glcm_red_contrast_late_summer
+glcm_delta_red_contrast_spr2aut
+glcm_glcm_nir_ent_spring

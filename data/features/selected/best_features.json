@@ -1,0 +1,464 @@
+{
+    "ph": [
+        {
+            "feature": "spectral_GNDVI_spring",
+            "family": "gndvi",
+            "rf_importance": 0.2399
+        },
+        {
+            "feature": "glcm_glcm_nir_ent_autumn",
+            "family": "glcm_entropy",
+            "rf_importance": 0.0922
+        },
+        {
+            "feature": "ts_s2_MSI_std",
+            "family": "other",
+            "rf_importance": 0.0478
+        },
+        {
+            "feature": "delta_s2_BSI_summer_to_late_summer",
+            "family": "delta_indices",
+            "rf_importance": 0.0312
+        },
+        {
+            "feature": "spectral_B11_B8_late_summer",
+            "family": "band_b11",
+            "rf_importance": 0.0085
+        },
+        {
+            "feature": "ts_s2_MSI_slope",
+            "family": "topo",
+            "rf_importance": 0.0071
+        },
+        {
+            "feature": "l8_SR_B7_spring",
+            "family": "band_b7",
+            "rf_importance": 0.0049
+        },
+        {
+            "feature": "topo_aspect_cos",
+            "family": "topo",
+            "rf_importance": 0.0046
+        },
+        {
+            "feature": "spectral_PCA_1_late_summer",
+            "family": "other",
+            "rf_importance": 0.0036
+        },
+        {
+            "feature": "glcm_ratio_contrast_summer",
+            "family": "math_composite",
+            "rf_importance": 0.0034
+        },
+        {
+            "feature": "spectral_PCA_4_summer",
+            "family": "other",
+            "rf_importance": 0.0021
+        },
+        {
+            "feature": "ts_s2_RENDVI_slope",
+            "family": "ndvi",
+            "rf_importance": 0.0019
+        },
+        {
+            "feature": "s2_B4_summer",
+            "family": "band_b4",
+            "rf_importance": 0.0017
+        },
+        {
+            "feature": "spectral_PCA_3_late_summer",
+            "family": "other",
+            "rf_importance": 0.0016
+        },
+        {
+            "feature": "l8_SR_B6_summer",
+            "family": "band_b6",
+            "rf_importance": 0.0016
+        }
+    ],
+    "soc": [
+        {
+            "feature": "ts_s2_MSI_std",
+            "family": "other",
+            "rf_importance": 0.1312
+        },
+        {
+            "feature": "spectral_B3_B4_spring",
+            "family": "band_b3",
+            "rf_importance": 0.081
+        },
+        {
+            "feature": "topo_DEM",
+            "family": "other",
+            "rf_importance": 0.0526
+        },
+        {
+            "feature": "climate_GS_precip",
+            "family": "climate",
+            "rf_importance": 0.0427
+        },
+        {
+            "feature": "s2_NDWI_spring",
+            "family": "other",
+            "rf_importance": 0.038
+        },
+        {
+            "feature": "s2_B3_late_summer",
+            "family": "band_b3",
+            "rf_importance": 0.0358
+        },
+        {
+            "feature": "spectral_B3_B4_late_summer",
+            "family": "band_b3",
+            "rf_importance": 0.0272
+        },
+        {
+            "feature": "mg",
+            "family": "other",
+            "rf_importance": 0.0263
+        },
+        {
+            "feature": "glcm_ratio_asm_summer",
+            "family": "math_composite",
+            "rf_importance": 0.025
+        },
+        {
+            "feature": "climate_MAP",
+            "family": "climate",
+            "rf_importance": 0.0088
+        },
+        {
+            "feature": "topo_aspect_cos",
+            "family": "topo",
+            "rf_importance": 0.0063
+        },
+        {
+            "feature": "ts_s2_PSRI_slope",
+            "family": "topo",
+            "rf_importance": 0.0055
+        },
+        {
+            "feature": "cs_SAVI_diff_late_summer",
+            "family": "math_composite",
+            "rf_importance": 0.0052
+        },
+        {
+            "feature": "glcm_ratio_asm_spring",
+            "family": "math_composite",
+            "rf_importance": 0.0045
+        },
+        {
+            "feature": "cs_GNDVI_diff_spring",
+            "family": "math_composite",
+            "rf_importance": 0.0044
+        }
+    ],
+    "no3": [
+        {
+            "feature": "mg",
+            "family": "other",
+            "rf_importance": 0.2149
+        },
+        {
+            "feature": "glcm_glcm_nir_idm_summer",
+            "family": "glcm_idm",
+            "rf_importance": 0.141
+        },
+        {
+            "feature": "l8_GNDVI_spring",
+            "family": "gndvi",
+            "rf_importance": 0.06
+        },
+        {
+            "feature": "glcm_glcm_nir_contrast_late_summer",
+            "family": "glcm_contrast",
+            "rf_importance": 0.0393
+        },
+        {
+            "feature": "glcm_glcm_nir_contrast_spring",
+            "family": "glcm_contrast",
+            "rf_importance": 0.0386
+        },
+        {
+            "feature": "glcm_ratio_contrast_late_summer",
+            "family": "math_composite",
+            "rf_importance": 0.0322
+        },
+        {
+            "feature": "climate_MAP",
+            "family": "climate",
+            "rf_importance": 0.0196
+        },
+        {
+            "feature": "spectral_BSI_spring",
+            "family": "bsi",
+            "rf_importance": 0.0127
+        },
+        {
+            "feature": "s2_B3_spring",
+            "family": "band_b3",
+            "rf_importance": 0.0083
+        },
+        {
+            "feature": "cs_NDVI_ratio_spring",
+            "family": "math_composite",
+            "rf_importance": 0.0071
+        },
+        {
+            "feature": "l8_SR_B7_autumn",
+            "family": "band_b7",
+            "rf_importance": 0.0047
+        },
+        {
+            "feature": "s2_SAVI_spring",
+            "family": "savi",
+            "rf_importance": 0.004
+        },
+        {
+            "feature": "topo_DEM",
+            "family": "other",
+            "rf_importance": 0.0039
+        },
+        {
+            "feature": "l8_SR_B5_summer",
+            "family": "band_b5",
+            "rf_importance": 0.0035
+        },
+        {
+            "feature": "cs_SAVI_diff_late_summer",
+            "family": "math_composite",
+            "rf_importance": 0.0029
+        }
+    ],
+    "p": [
+        {
+            "feature": "climate_GS_temp",
+            "family": "climate",
+            "rf_importance": 0.4278
+        },
+        {
+            "feature": "spectral_PCA_3_autumn",
+            "family": "other",
+            "rf_importance": 0.0486
+        },
+        {
+            "feature": "l8_SR_B2_autumn",
+            "family": "band_b2",
+            "rf_importance": 0.0456
+        },
+        {
+            "feature": "cs_NDVI_diff_late_summer",
+            "family": "math_composite",
+            "rf_importance": 0.0424
+        },
+        {
+            "feature": "topo_aspect_cos",
+            "family": "topo",
+            "rf_importance": 0.0366
+        },
+        {
+            "feature": "topo_profile_curvature",
+            "family": "other",
+            "rf_importance": 0.027
+        },
+        {
+            "feature": "topo_TPI",
+            "family": "other",
+            "rf_importance": 0.0256
+        },
+        {
+            "feature": "fe",
+            "family": "other",
+            "rf_importance": 0.0254
+        },
+        {
+            "feature": "delta_s2_GNDVI_late_summer_to_autumn",
+            "family": "delta_indices",
+            "rf_importance": 0.0161
+        },
+        {
+            "feature": "ts_s2_MSI_slope",
+            "family": "topo",
+            "rf_importance": 0.0155
+        },
+        {
+            "feature": "ts_l8_GNDVI_slope",
+            "family": "gndvi",
+            "rf_importance": 0.0125
+        },
+        {
+            "feature": "glcm_ratio_idm_late_summer",
+            "family": "math_composite",
+            "rf_importance": 0.0067
+        },
+        {
+            "feature": "glcm_ratio_ent_autumn",
+            "family": "math_composite",
+            "rf_importance": 0.0044
+        },
+        {
+            "feature": "glcm_glcm_red_contrast_late_summer",
+            "family": "glcm_contrast",
+            "rf_importance": 0.004
+        },
+        {
+            "feature": "glcm_delta_red_contrast_spr2aut",
+            "family": "delta_indices",
+            "rf_importance": 0.0033
+        }
+    ],
+    "k": [
+        {
+            "feature": "s2_BSI_spring",
+            "family": "bsi",
+            "rf_importance": 0.0965
+        },
+        {
+            "feature": "spectral_PCA_5_summer",
+            "family": "other",
+            "rf_importance": 0.0667
+        },
+        {
+            "feature": "l8_GNDVI_spring",
+            "family": "gndvi",
+            "rf_importance": 0.0555
+        },
+        {
+            "feature": "topo_DEM",
+            "family": "other",
+            "rf_importance": 0.0451
+        },
+        {
+            "feature": "climate_GS_precip",
+            "family": "climate",
+            "rf_importance": 0.0368
+        },
+        {
+            "feature": "spectral_PCA_5_spring",
+            "family": "other",
+            "rf_importance": 0.0351
+        },
+        {
+            "feature": "spectral_B3_B4_spring",
+            "family": "band_b3",
+            "rf_importance": 0.0234
+        },
+        {
+            "feature": "glcm_glcm_red_ent_late_summer",
+            "family": "glcm_entropy",
+            "rf_importance": 0.0225
+        },
+        {
+            "feature": "mg",
+            "family": "other",
+            "rf_importance": 0.0212
+        },
+        {
+            "feature": "l8_GNDVI_late_summer",
+            "family": "gndvi",
+            "rf_importance": 0.0121
+        },
+        {
+            "feature": "glcm_ratio_asm_summer",
+            "family": "math_composite",
+            "rf_importance": 0.0107
+        },
+        {
+            "feature": "s2_B12_autumn",
+            "family": "band_b12",
+            "rf_importance": 0.0099
+        },
+        {
+            "feature": "spectral_B3_B4_late_summer",
+            "family": "band_b3",
+            "rf_importance": 0.0086
+        },
+        {
+            "feature": "cs_SAVI_ratio_late_summer",
+            "family": "math_composite",
+            "rf_importance": 0.007
+        },
+        {
+            "feature": "delta_s2_GNDVI_late_summer_to_autumn",
+            "family": "delta_indices",
+            "rf_importance": 0.0068
+        }
+    ],
+    "s": [
+        {
+            "feature": "mn",
+            "family": "other",
+            "rf_importance": 0.5355
+        },
+        {
+            "feature": "s2_B2_spring",
+            "family": "band_b2",
+            "rf_importance": 0.0451
+        },
+        {
+            "feature": "glcm_glcm_nir_contrast_late_summer",
+            "family": "glcm_contrast",
+            "rf_importance": 0.0435
+        },
+        {
+            "feature": "topo_DEM",
+            "family": "other",
+            "rf_importance": 0.0339
+        },
+        {
+            "feature": "glcm_ratio_contrast_late_summer",
+            "family": "math_composite",
+            "rf_importance": 0.0163
+        },
+        {
+            "feature": "s2_MSI_spring",
+            "family": "other",
+            "rf_importance": 0.0159
+        },
+        {
+            "feature": "spectral_PCA_3_autumn",
+            "family": "other",
+            "rf_importance": 0.0127
+        },
+        {
+            "feature": "s2_RENDVI_late_summer",
+            "family": "ndvi",
+            "rf_importance": 0.0058
+        },
+        {
+            "feature": "glcm_delta_nir_asm_spr2sum",
+            "family": "delta_indices",
+            "rf_importance": 0.005
+        },
+        {
+            "feature": "ts_l8_GNDVI_mean",
+            "family": "gndvi",
+            "rf_importance": 0.0047
+        },
+        {
+            "feature": "glcm_ratio_asm_autumn",
+            "family": "math_composite",
+            "rf_importance": 0.0022
+        },
+        {
+            "feature": "s2_B12_autumn",
+            "family": "band_b12",
+            "rf_importance": 0.0012
+        },
+        {
+            "feature": "range_l8_NDVI",
+            "family": "ndvi",
+            "rf_importance": 0.0011
+        },
+        {
+            "feature": "l8_SR_B4_late_summer",
+            "family": "band_b4",
+            "rf_importance": 0.001
+        },
+        {
+            "feature": "l8_SR_B6_spring",
+            "family": "band_b6",
+            "rf_importance": 0.001
+        }
+    ]
+}

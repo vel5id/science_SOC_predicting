@@ -19,6 +19,12 @@ ML/.venv/
 
 # ────── Data (heavy) ──────
 data/*
+# …but DO track the feature-selection config (tiny text/JSON, no sensitive data):
+# the per-target top-15 MDI feature lists that reproduce the paper's models.
+!data/features/
+data/features/*
+!data/features/selected/
+!data/features/selected/*
 raw_data/*
 !raw_data/pdf_excel_data/
 raw_data/pdf_excel_data/*

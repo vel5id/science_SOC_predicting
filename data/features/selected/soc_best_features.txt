@@ -1,0 +1,15 @@
+ts_s2_MSI_std
+spectral_B3_B4_spring
+topo_DEM
+climate_GS_precip
+s2_NDWI_spring
+s2_B3_late_summer
+spectral_B3_B4_late_summer
+glcm_ratio_asm_summer
+climate_MAP
+topo_aspect_cos
+ts_s2_PSRI_slope
+cs_SAVI_diff_late_summer
+glcm_ratio_asm_spring
+cs_GNDVI_diff_spring
+spectral_PCA_5_summer
