@@ -9,25 +9,25 @@ Only the small feature-selection config (`selected/`) and this README are tracke
 
 | Task | File |
 |------|------|
-| **Reproduce the paper** (ML models, all validation strategies) | **`master_dataset_old.csv`** — the canonical 1085 × 530 build |
+| **Reproduce the paper** (ML models, all validation strategies) | **`master_dataset.csv`** — the canonical 1085 × 530 build |
 | Anything else | see the table below |
 
-`ML/data_loader.py` reads `data/features/master_dataset.csv`. To reproduce the published
-metrics, `master_dataset.csv` **must be the canonical build** (1085 samples × 530 features,
-81 fields, 20 farms, 2022–2023). The loader warns if the loaded file is not that build.
+`ML/data_loader.py` reads `data/features/master_dataset.csv`. In this archive that file
+**is** the canonical build (1085 samples × 530 features, 81 fields, 20 farms, 2022–2023),
+so the modelling pipeline runs out of the box. The loader warns if a non-canonical file is
+substituted.
 
-> **Version note.** In the current archive the file literally named `master_dataset.csv`
-> is a *later experimental build* (2060 rows / 100 fields / 29 farms, includes 2021, a
-> reduced 142-column feature set) and does **not** reproduce the paper. Until the Zenodo
-> archive is refreshed, use `master_dataset_old.csv` as `master_dataset.csv` (copy/rename
-> it, or point `DATA_PATH` to it).
+> **Version note.** An earlier archive snapshot shipped a *later experimental build*
+> (2060 rows / 100 fields / 29 farms, includes 2021, a reduced 142-column feature set)
+> under the name `master_dataset.csv`; it does **not** reproduce the paper. If your copy of
+> `master_dataset.csv` has those dimensions, re-download this corrected archive.
 
 ## All files
 
 | File | rows | cols | fields | farms | years | What it is | Used by paper? |
 |------|-----:|-----:|-------:|------:|-------|------------|:--------------:|
-| **`master_dataset_old.csv`** | 1085 | **530** | 81 | 20 | 2022–23 | **Canonical paper build.** One row per soil sample; full engineered feature set. Matches abstract "530 features", Table 1 (n=1085), §2.2 (174+911). | ✅ **yes** |
-| `master_dataset.csv` | 2060 | 142 | 100 | 29 | 2021–23 | Later experimental build: extra farms/fields/year, reduced single-season feature set (`s2_B02_*` naming). | ❌ no |
+| **`master_dataset.csv`** | 1085 | **530** | 81 | 20 | 2022–23 | **Canonical paper build** (what the pipeline loads). One row per soil sample; full engineered feature set. Matches abstract "530 features", Table 1 (n=1085), §2.2 (174+911). | ✅ **yes** |
+| `master_dataset_old.csv` | 1085 | 530 | 81 | 20 | 2022–23 | Provenance copy of the canonical build (identical to `master_dataset.csv`). | reference |
 | `master_dataset_leaky_backup.csv` | 1085 | 536 | 81 | 20 | 2022–23 | `master_dataset_old.csv` **plus 6 lab micronutrient columns** (`mg, fe, mn, zn, cu, mo`). Kept for reference only — those columns are leaky (see below). | ❌ no |
 | `full_dataset.csv` | 1085 | 272 | 81 | 20 | 2022–23 | Earlier / reduced feature-engineering build. | auxiliary |
 | `enriched_dataset.csv` | 1085 | 456 | 81 | 20 | 2022–23 | Extra engineered features for the `approximated/` (pixel-level RF) experiments. | auxiliary |
@@ -71,5 +71,5 @@ change features · `glcm_*` texture · `topo_*` SRTM terrain · `climate_*` ERA5
 Targets: `ph, soc` (`hu` = humus), `no3, p, k, s`. Metadata: `id, year, farm, field_name,
 grid_id, centroid_lon/lat, geometry_wkt, sampling_date`.
 
-Reproduced RF Farm-LOFO Spearman ρ on the canonical build (`master_dataset_old.csv` +
+Reproduced RF Farm-LOFO Spearman ρ on the canonical build (`master_dataset.csv` +
 `selected/`): pH 0.750 · SOC 0.529 · P₂O₅ 0.490 · K₂O 0.448 · NO₃ 0.232 · S 0.240.
