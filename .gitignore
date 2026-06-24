@@ -23,6 +23,7 @@ data/*
 # the per-target top-15 MDI feature lists that reproduce the paper's models.
 !data/features/
 data/features/*
+!data/features/README.md
 !data/features/selected/
 !data/features/selected/*
 raw_data/*
